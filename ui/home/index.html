@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenI 启智 — 普惠算力，为每一个AI想法注入澎湃动力</title>
+<meta name="description" content="启智AI开源社区 — 一站式AI开发平台，提供代码托管、数据集管理、模型调试训练推理与充沛普惠算力。中国算力网（C²NET）开源开放试验场。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;700;900&amp;family=Sora:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Noto+Sans+SC:wght@300;400;500;700;900&amp;family=Instrument+Serif:ital@0;1&amp;display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   OpenI · Neural Forge Redesign
+   Aesthetic: luminous compute-network control room
+   ============================================================ */
+
+:root{
+  --bg:        #07090C;
+  --bg-2:      #0B0E14;
+  --surface:   #0F131C;
+  --surface-2: #161C28;
+  --surface-3: #1E2533;
+  --accent:    #00E5C7;        /* electric mint — flowing compute energy */
+  --accent-soft:#13E3C0;
+  --accent-2:  #FFB347;        /* warm amber — power / CTA */
+  --accent-3:  #6EA8FF;        /* cool blue — data */
+  --magenta:   #FF6E9C;
+  --text:      #EAF0F6;
+  --text-dim:  #8B97A8;
+  --text-mute: #5C6675;
+  --border:    rgba(255,255,255,.08);
+  --border-2:  rgba(255,255,255,.14);
+  --glow:      0 0 40px rgba(0,229,199,.28);
+
+  --f-display: 'Unbounded', 'Noto Sans SC', sans-serif;
+  --f-body:    'Sora', 'Noto Sans SC', sans-serif;
+  --f-mono:    'JetBrains Mono', 'Noto Sans SC', monospace;
+  --f-serif:   'Instrument Serif', 'Noto Sans SC', serif;
+  --f-cn:      'Noto Sans SC', sans-serif;
+
+  --maxw: 1280px;
+  --ease: cubic-bezier(.2,.7,.2,1);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--f-body);
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.6;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+::selection{background:var(--accent);color:#04140f}
+
+/* scrollbar */
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--surface-3);border-radius:20px;border:3px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+
+/* grain + vignette overlays */
+.grain{
+  position:fixed;inset:0;z-index:9998;pointer-events:none;opacity:.035;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.cursor-glow{
+  position:fixed;width:540px;height:540px;border-radius:50%;left:0;top:0;z-index:1;pointer-events:none;
+  background:radial-gradient(circle, rgba(0,229,199,.10) 0%, rgba(0,229,199,0) 60%);
+  transform:translate(-50%,-50%);transition:opacity .4s;mix-blend-mode:screen;
+}
+
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+
+/* ---- buttons ---- */
+.btn{
+  display:inline-flex;align-items:center;gap:.6em;font-family:var(--f-mono);font-size:13px;
+  letter-spacing:.04em;font-weight:500;padding:14px 26px;border-radius:999px;
+  transition:all .35s var(--ease);position:relative;white-space:nowrap;
+}
+.btn--primary{
+  background:var(--accent);color:#04140f;font-weight:600;
+  box-shadow:0 0 0 1px rgba(0,229,199,.4),0 14px 40px -10px rgba(0,229,199,.55);
+}
+.btn--primary:hover{background:#3ff0d8;box-shadow:0 0 0 1px rgba(0,229,199,.7),0 18px 50px -8px rgba(0,229,199,.7);transform:translateY(-2px)}
+.btn--ghost{border:1px solid var(--border-2);color:var(--text);background:rgba(255,255,255,.02)}
+.btn--ghost:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,229,199,.06)}
+.btn--amber{background:var(--accent-2);color:#241300;font-weight:600;box-shadow:0 0 0 1px rgba(255,179,71,.4),0 14px 40px -10px rgba(255,179,71,.5)}
+.btn--amber:hover{background:#ffc266;transform:translateY(-2px)}
+.btn .arr{transition:transform .35s var(--ease)}
+.btn:hover .arr{transform:translateX(4px)}
+
+/* eyebrow label */
+.eyebrow{
+  font-family:var(--f-mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--accent);display:inline-flex;align-items:center;gap:.6em;
+}
+.eyebrow::before{content:"";width:26px;height:1px;background:var(--accent);display:inline-block}
+
+/* ============================================================
+   NAV
+   ============================================================ */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;transition:all .4s var(--ease);
+  padding:18px 0;border-bottom:1px solid transparent;
+}
+.nav.scrolled{
+  background:rgba(7,9,12,.78);backdrop-filter:blur(18px) saturate(1.4);
+  border-bottom:1px solid var(--border);padding:12px 0;
+}
+.nav__inner{display:flex;align-items:center;justify-content:space-between;gap:32px}
+.logo{display:flex;align-items:center;gap:12px;font-family:var(--f-display);font-weight:700;font-size:21px;letter-spacing:-.02em}
+.logo__mark{width:34px;height:34px;position:relative;flex:none}
+.logo__mark svg{width:100%;height:100%;display:block}
+.logo__mark .ring{animation:spin 14s linear infinite;transform-origin:center}
+@keyframes spin{to{transform:rotate(360deg)}}
+.logo span b{color:var(--accent)}
+.nav__links{display:flex;align-items:center;gap:4px}
+.nav__links a{
+  font-size:14px;color:var(--text-dim);padding:9px 16px;border-radius:999px;
+  transition:all .3s var(--ease);position:relative;
+}
+.nav__links a:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.nav__links a .dot{width:5px;height:5px;border-radius:50%;background:var(--accent);display:inline-block;margin-right:7px;opacity:0;transition:opacity .3s}
+.nav__links a:hover .dot{opacity:1}
+.nav__cta{display:flex;align-items:center;gap:12px}
+.nav__lang{font-family:var(--f-mono);font-size:12px;color:var(--text-dim);border:1px solid var(--border);padding:8px 12px;border-radius:8px;transition:.3s}
+.nav__lang:hover{border-color:var(--accent);color:var(--accent)}
+.burger{display:none;flex-direction:column;gap:5px;padding:8px}
+.burger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero{
+  position:relative;min-height:100vh;display:flex;align-items:center;
+  padding:140px 0 70px;overflow:hidden;
+  background:
+    radial-gradient(120% 90% at 80% -10%, rgba(0,229,199,.10) 0%, rgba(0,229,199,0) 45%),
+    radial-gradient(90% 70% at 10% 110%, rgba(110,168,255,.10) 0%, rgba(110,168,255,0) 50%),
+    var(--bg);
+}
+#netcanvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;opacity:.9}
+.hero__grid{
+  position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.5;
+  background-image:
+    linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);
+  background-size:64px 64px;
+  mask-image:radial-gradient(120% 100% at 50% 30%, #000 0%, transparent 75%);
+}
+.hero__inner{position:relative;z-index:2;max-width:1000px}
+.hero__top{display:flex;align-items:center;gap:14px;margin-bottom:30px;flex-wrap:wrap}
+.hero__badge{
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.16em;color:var(--accent);
+  border:1px solid rgba(0,229,199,.3);background:rgba(0,229,199,.05);padding:7px 14px;border-radius:999px;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.hero__badge .pulse{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 rgba(0,229,199,.6);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(0,229,199,.6)}70%{box-shadow:0 0 0 10px rgba(0,229,199,0)}100%{box-shadow:0 0 0 0 rgba(0,229,199,0)}}
+.hero__crumb{font-family:var(--f-mono);font-size:12px;color:var(--text-mute);letter-spacing:.04em}
+.hero__crumb b{color:var(--text-dim)}
+
+.hero h1{
+  font-family:var(--f-display);font-weight:900;font-size:clamp(48px,8.2vw,116px);
+  line-height:.92;letter-spacing:-.035em;margin-bottom:34px;
+}
+.hero h1 .row{display:block;overflow:hidden}
+.hero h1 .word{display:inline-block;opacity:0;transform:translateY(110%);animation:rise .9s var(--ease) forwards}
+.hero h1 .word.d1{animation-delay:.15s}.hero h1 .word.d2{animation-delay:.27s}
+.hero h1 .word.d3{animation-delay:.39s}.hero h1 .word.d4{animation-delay:.51s}
+.hero h1 .word.d5{animation-delay:.63s}.hero h1 .word.d6{animation-delay:.75s}
+@keyframes rise{to{opacity:1;transform:translateY(0)}}
+.hero h1 em{font-style:normal;color:var(--accent);position:relative}
+.hero h1 .serif{font-family:var(--f-serif);font-style:italic;font-weight:400;color:var(--accent-2)}
+.hero h1 .glitch{
+  position:relative;color:var(--text);
+}
+.hero h1 .glitch::after{
+  content:attr(data-t);position:absolute;left:0;top:0;color:var(--accent);
+  clip-path:inset(0 0 60% 0);opacity:.6;animation:glitch 4s infinite steps(1);
+}
+@keyframes glitch{
+  0%,92%,100%{transform:translate(0);opacity:0}
+  93%{transform:translate(2px,-1px);opacity:.7}
+  95%{transform:translate(-2px,1px);opacity:.5}
+  97%{transform:translate(1px,0);opacity:.6}
+}
+
+.hero__sub{
+  max-width:620px;font-size:clamp(15px,1.6vw,18px);color:var(--text-dim);
+  line-height:1.7;margin-bottom:42px;opacity:0;animation:fade .8s var(--ease) .9s forwards;
+}
+@keyframes fade{to{opacity:1}}
+.hero__sub b{color:var(--text);font-weight:500}
+.hero__cta{display:flex;gap:14px;flex-wrap:wrap;opacity:0;animation:fade .8s var(--ease) 1.05s forwards}
+
+.hero__metrics{
+  position:absolute;right:0;bottom:50px;z-index:2;display:flex;flex-direction:column;gap:18px;
+  opacity:0;animation:fade 1s var(--ease) 1.3s forwards;
+}
+.metric-card{
+  border:1px solid var(--border);background:rgba(15,19,28,.6);backdrop-filter:blur(10px);
+  border-radius:14px;padding:16px 20px;min-width:190px;position:relative;overflow:hidden;
+  transition:.35s var(--ease);
+}
+.metric-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--accent);transform:scaleY(0);transform-origin:top;transition:.4s var(--ease)}
+.metric-card:hover{border-color:var(--border-2);transform:translateX(-6px)}
+.metric-card:hover::before{transform:scaleY(1)}
+.metric-card .k{font-family:var(--f-mono);font-size:10px;letter-spacing:.16em;color:var(--text-mute);text-transform:uppercase}
+.metric-card .v{font-family:var(--f-display);font-size:26px;font-weight:700;margin-top:4px;color:var(--text)}
+.metric-card .v .u{font-size:13px;color:var(--accent);font-weight:500;margin-left:3px}
+
+.hero__scroll{
+  position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:2;
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.2em;color:var(--text-mute);
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+}
+.hero__scroll .line{width:1px;height:40px;background:linear-gradient(var(--accent),transparent);position:relative;overflow:hidden}
+.hero__scroll .line::after{content:"";position:absolute;top:0;left:0;width:100%;height:50%;background:var(--accent);animation:scrolldown 2s infinite}
+@keyframes scrolldown{0%{transform:translateY(-100%)}100%{transform:translateY(200%)}}
+
+/* ============================================================
+   SECTION SHELL
+   ============================================================ */
+.section{position:relative;padding:120px 0}
+.section__head{margin-bottom:64px;max-width:780px}
+.section__head h2{
+  font-family:var(--f-display);font-weight:700;font-size:clamp(32px,5vw,60px);
+  line-height:1.02;letter-spacing:-.025em;margin:18px 0 0;
+}
+.section__head h2 em{font-style:normal;color:var(--accent)}
+.section__head h2 .serif{font-family:var(--f-serif);font-style:italic;font-weight:400;color:var(--accent-2)}
+.section__head p{color:var(--text-dim);font-size:17px;margin-top:22px;max-width:600px}
+.section__head--center{text-align:center;margin-inline:auto}
+.section__head--center p{margin-inline:auto}
+
+/* reveal */
+.reveal{opacity:0;transform:translateY(36px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+.reveal.d1{transition-delay:.1s}.reveal.d2{transition-delay:.2s}.reveal.d3{transition-delay:.3s}.reveal.d4{transition-delay:.4s}
+
+/* ============================================================
+   C²NET — COMPUTE POWER
+   ============================================================ */
+.compute{position:relative;border-top:1px solid var(--border)}
+.compute::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(80% 50% at 50% 0%, rgba(0,229,199,.07), transparent 60%);
+}
+.compute__lede{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:40px;flex-wrap:wrap;margin-bottom:56px;
+}
+.compute__lede .right{text-align:right;font-family:var(--f-mono);font-size:12px;color:var(--text-mute);letter-spacing:.1em}
+.compute__lede .right b{color:var(--accent-2);font-size:15px;display:block;margin-top:4px}
+.stat-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);
+  border:1px solid var(--border);border-radius:18px;overflow:hidden;
+}
+.stat{
+  background:var(--bg-2);padding:40px 34px;position:relative;transition:.4s var(--ease);overflow:hidden;
+}
+.stat::after{
+  content:"";position:absolute;right:-40px;bottom:-40px;width:140px;height:140px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,229,199,.12),transparent 70%);opacity:0;transition:.5s var(--ease);
+}
+.stat:hover{background:var(--surface)}
+.stat:hover::after{opacity:1}
+.stat:hover .stat__num{color:var(--accent)}
+.stat__idx{font-family:var(--f-mono);font-size:11px;color:var(--text-mute);letter-spacing:.14em}
+.stat__num{
+  font-family:var(--f-display);font-weight:900;font-size:clamp(40px,5vw,64px);line-height:1;
+  margin:18px 0 10px;letter-spacing:-.03em;transition:color .4s;display:flex;align-items:baseline;gap:6px;
+}
+.stat__num .unit{font-size:.36em;color:var(--accent);font-weight:600;letter-spacing:0}
+.stat__num .plus{color:var(--accent-2)}
+.stat__label{font-size:14px;color:var(--text-dim)}
+.stat__label b{color:var(--text);font-weight:500}
+.stat__bar{height:2px;background:var(--surface-3);margin-top:22px;border-radius:2px;overflow:hidden;position:relative}
+.stat__bar i{position:absolute;left:0;top:0;height:100%;width:0;background:var(--accent);transition:width 1.6s var(--ease)}
+.stat.in .stat__bar i{width:var(--w,70%)}
+
+/* ============================================================
+   CAPABILITIES
+   ============================================================ */
+.caps{border-top:1px solid var(--border);background:var(--bg)}
+.cap-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.cap{
+  border:1px solid var(--border);background:linear-gradient(180deg,var(--surface),var(--bg-2));
+  border-radius:16px;padding:32px 28px;position:relative;overflow:hidden;transition:.4s var(--ease);min-height:240px;
+  display:flex;flex-direction:column;
+}
+.cap::before{
+  content:"";position:absolute;inset:0;border-radius:16px;padding:1px;
+  background:linear-gradient(135deg,var(--accent),transparent 50%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;opacity:0;transition:.4s;
+}
+.cap:hover{transform:translateY(-6px)}
+.cap:hover::before{opacity:1}
+.cap:hover .cap__icon{color:var(--accent);transform:translateY(-2px) scale(1.05)}
+.cap__icon{width:46px;height:46px;color:var(--text-dim);transition:.4s var(--ease);margin-bottom:auto}
+.cap__icon svg{width:100%;height:100%}
+.cap__no{position:absolute;top:24px;right:26px;font-family:var(--f-mono);font-size:11px;color:var(--text-mute)}
+.cap h3{font-family:var(--f-display);font-weight:600;font-size:19px;letter-spacing:-.01em;margin:24px 0 10px}
+.cap p{font-size:13.5px;color:var(--text-dim);line-height:1.6}
+
+/* ============================================================
+   ACTIVITIES
+   ============================================================ */
+.acts{border-top:1px solid var(--border);position:relative}
+.acts::before{content:"";position:absolute;inset:0;background:radial-gradient(60% 60% at 90% 10%,rgba(255,179,71,.06),transparent 60%);pointer-events:none}
+.act-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.act{
+  position:relative;border:1px solid var(--border);border-radius:18px;overflow:hidden;
+  background:var(--surface);min-height:340px;display:flex;flex-direction:column;transition:.45s var(--ease);
+}
+.act__viz{height:140px;position:relative;overflow:hidden;border-bottom:1px solid var(--border)}
+.act__viz canvas{position:absolute;inset:0;width:100%;height:100%}
+.act__tag{
+  position:absolute;top:14px;left:16px;font-family:var(--f-mono);font-size:10px;letter-spacing:.16em;
+  color:var(--accent);background:rgba(7,9,12,.7);backdrop-filter:blur(6px);padding:6px 11px;border-radius:6px;
+  border:1px solid rgba(0,229,199,.25);z-index:2;
+}
+.act__body{padding:26px 26px 30px;flex:1;display:flex;flex-direction:column}
+.act__date{font-family:var(--f-mono);font-size:12px;color:var(--accent-2);letter-spacing:.04em;margin-bottom:14px}
+.act h3{font-family:var(--f-display);font-weight:600;font-size:20px;line-height:1.25;letter-spacing:-.01em;margin-bottom:14px}
+.act p{font-size:13.5px;color:var(--text-dim);flex:1}
+.act__more{margin-top:20px;font-family:var(--f-mono);font-size:12px;color:var(--text);display:inline-flex;align-items:center;gap:7px;transition:color .3s}
+.act:hover{transform:translateY(-6px);border-color:var(--border-2);box-shadow:0 30px 60px -30px rgba(0,0,0,.7)}
+.act:hover .act__more{color:var(--accent)}
+.act:hover .act__more .arr{transform:translateX(4px)}
+.act__more .arr{transition:transform .3s}
+
+/* ============================================================
+   COMMUNITY / TESTIMONIALS
+   ============================================================ */
+.community{border-top:1px solid var(--border);background:
+  radial-gradient(80% 60% at 50% 100%,rgba(110,168,255,.06),transparent 60%),var(--bg)}
+.dev-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.dev{
+  border:1px solid var(--border);border-radius:18px;padding:30px;background:var(--surface);
+  position:relative;overflow:hidden;transition:.4s var(--ease);
+}
+.dev:hover{border-color:rgba(0,229,199,.3);background:var(--surface-2)}
+.dev__quote{font-size:14.5px;color:var(--text);line-height:1.7;position:relative;padding-left:20px;margin-bottom:26px}
+.dev__quote::before{content:"\201C";position:absolute;left:-4px;top:-14px;font-family:var(--f-serif);font-size:54px;color:var(--accent);line-height:1;opacity:.7}
+.dev__person{display:flex;align-items:center;gap:14px}
+.dev__avatar{
+  width:48px;height:48px;border-radius:13px;flex:none;display:grid;place-items:center;
+  font-family:var(--f-display);font-weight:700;font-size:17px;color:#04140f;
+  background:linear-gradient(135deg,var(--accent),var(--accent-soft));position:relative;
+}
+.dev__avatar.alt1{background:linear-gradient(135deg,var(--accent-2),#ffd28a)}
+.dev__avatar.alt2{background:linear-gradient(135deg,var(--accent-3),#a9c8ff)}
+.dev__name{font-weight:600;font-size:15px}
+.dev__role{font-size:12.5px;color:var(--accent);margin-top:2px}
+.dev__id{font-family:var(--f-mono);font-size:11px;color:var(--text-mute);margin-top:2px}
+.dev__corner{position:absolute;top:18px;right:20px;font-family:var(--f-mono);font-size:10px;color:var(--text-mute);letter-spacing:.1em}
+
+.community__count{
+  display:flex;align-items:center;gap:18px;margin-top:40px;flex-wrap:wrap;
+  font-family:var(--f-mono);font-size:13px;color:var(--text-dim);
+}
+.community__count .big{font-family:var(--f-display);font-weight:900;font-size:30px;color:var(--accent)}
+
+/* ============================================================
+   HONORS TIMELINE
+   ============================================================ */
+.honors{border-top:1px solid var(--border)}
+.timeline{position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:20px}
+.timeline::before{
+  content:"";position:absolute;left:0;right:0;top:46px;height:1px;background:var(--border-2);
+}
+.tl-node{text-align:center;position:relative;padding:0 10px}
+.tl-dot{
+  width:14px;height:14px;border-radius:50%;background:var(--bg);border:2px solid var(--text-mute);
+  margin:40px auto 0;position:relative;z-index:2;transition:.4s var(--ease);
+}
+.tl-node.in .tl-dot{border-color:var(--accent);box-shadow:0 0 0 6px rgba(0,229,199,.12);background:var(--accent)}
+.tl-year{font-family:var(--f-display);font-weight:700;font-size:22px;margin-top:22px;transition:.4s}
+.tl-node.in .tl-year{color:var(--accent)}
+.tl-tags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:16px;max-width:180px;margin-inline:auto}
+.tl-tags span{font-size:11px;color:var(--text-dim);border:1px solid var(--border);padding:4px 9px;border-radius:6px;background:var(--surface)}
+
+/* ============================================================
+   PARTNERS
+   ============================================================ */
+.partners{border-top:1px solid var(--border);background:var(--bg)}
+.partner-grid{
+  display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);
+  border:1px solid var(--border);border-radius:16px;overflow:hidden;
+}
+.partner{
+  background:var(--bg-2);padding:34px 16px;display:grid;place-items:center;transition:.4s var(--ease);
+  position:relative;overflow:hidden;
+}
+.partner:hover{background:var(--surface)}
+.partner__mark{height:30px;display:flex;align-items:center;gap:9px;color:var(--text-dim);font-family:var(--f-display);font-weight:600;font-size:14px;transition:.4s}
+.partner:hover .partner__mark{color:var(--text)}
+.partner__mark svg{height:100%;width:auto}
+.partner__mark .ico{width:24px;height:24px;flex:none}
+
+/* ============================================================
+   CTA STRIP
+   ============================================================ */
+.cta-strip{
+  border-top:1px solid var(--border);position:relative;overflow:hidden;padding:110px 0;
+  background:radial-gradient(100% 100% at 50% 50%,rgba(0,229,199,.08),transparent 70%),var(--bg);
+}
+.cta-strip__inner{text-align:center;max-width:760px;margin:0 auto;position:relative;z-index:2}
+.cta-strip h2{font-family:var(--f-display);font-weight:900;font-size:clamp(34px,5.5vw,66px);line-height:1;letter-spacing:-.03em;margin-bottom:24px}
+.cta-strip h2 .serif{font-family:var(--f-serif);font-style:italic;font-weight:400;color:var(--accent)}
+.cta-strip p{color:var(--text-dim);font-size:17px;margin-bottom:36px}
+.cta-strip__btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.cta-strip__deco{
+  position:absolute;font-family:var(--f-display);font-weight:900;font-size:clamp(120px,22vw,320px);
+  color:rgba(255,255,255,.018);letter-spacing:-.05em;top:50%;left:50%;transform:translate(-50%,-50%);
+  white-space:nowrap;pointer-events:none;z-index:1;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.footer{border-top:1px solid var(--border);background:var(--bg-2);padding:70px 0 36px}
+.footer__top{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px;margin-bottom:50px}
+.footer__brand .logo{margin-bottom:18px}
+.footer__brand p{color:var(--text-dim);font-size:14px;max-width:300px;line-height:1.7}
+.footer__col h4{font-family:var(--f-mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-mute);margin-bottom:18px}
+.footer__col a{display:block;color:var(--text-dim);font-size:14px;padding:6px 0;transition:.3s}
+.footer__col a:hover{color:var(--accent);transform:translateX(4px)}
+.footer__bottom{
+  border-top:1px solid var(--border);padding-top:26px;display:flex;justify-content:space-between;
+  align-items:center;gap:20px;flex-wrap:wrap;
+}
+.footer__bottom p{font-size:13px;color:var(--text-mute);line-height:1.7}
+.footer__bottom .addr{font-family:var(--f-mono);font-size:12px;color:var(--text-mute)}
+.footer__social{display:flex;gap:12px}
+.footer__social a{width:38px;height:38px;border:1px solid var(--border);border-radius:10px;display:grid;place-items:center;color:var(--text-dim);transition:.3s}
+.footer__social a:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-3px)}
+.footer__social svg{width:17px;height:17px}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width:980px){
+  .nav__links{display:none}
+  .burger{display:flex}
+  .hero__metrics{display:none}
+  .cap-grid{grid-template-columns:repeat(2,1fr)}
+  .act-grid,.dev-grid{grid-template-columns:1fr}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .timeline{grid-template-columns:repeat(5,1fr);gap:6px}
+  .tl-tags{display:none}
+  .partner-grid{grid-template-columns:repeat(3,1fr)}
+  .footer__top{grid-template-columns:1fr 1fr}
+}
+@media (max-width:640px){
+  .section{padding:80px 0}
+  .wrap{padding:0 20px}
+  .cap-grid{grid-template-columns:1fr}
+  .stat-grid{grid-template-columns:1fr}
+  .partner-grid{grid-template-columns:repeat(2,1fr)}
+  .footer__top{grid-template-columns:1fr}
+  .hero{padding:120px 0 50px}
+  .nav__lang{display:none}
+  .compute__lede .right{text-align:left}
+}
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+<div class="cursor-glow" id="cursorGlow"></div>
+
+<!-- ============ NAV ============ -->
+<header class="nav" id="nav">
+  <div class="wrap nav__inner">
+    <a href="#" class="logo" aria-label="OpenI 启智社区">
+      <span class="logo__mark">
+        <svg viewBox="0 0 40 40" fill="none">
+          <g class="ring">
+            <circle cx="20" cy="20" r="16" stroke="#00E5C7" stroke-width="1.4" stroke-dasharray="4 6" opacity=".6"></circle>
+          </g>
+          <circle cx="20" cy="20" r="9" stroke="#00E5C7" stroke-width="1.6"></circle>
+          <circle cx="20" cy="20" r="3.2" fill="#00E5C7"></circle>
+          <circle cx="20" cy="4.5" r="2" fill="#FFB347"></circle>
+          <circle cx="35.5" cy="20" r="2" fill="#6EA8FF"></circle>
+          <circle cx="20" cy="35.5" r="2" fill="#00E5C7"></circle>
+          <circle cx="4.5" cy="20" r="2" fill="#FF6E9C"></circle>
+        </svg>
+      </span>
+      Open<b>I</b>
+      <span style="font-family:var(--f-cn);font-weight:400;color:var(--text-dim);font-size:15px;margin-left:2px">启智</span>
+    </a>
+    <nav class="nav__links">
+      <a href="#compute"><span class="dot"></span>普惠算力</a>
+      <a href="#caps"><span class="dot"></span>开发平台</a>
+      <a href="#acts"><span class="dot"></span>开发者活动</a>
+      <a href="#community"><span class="dot"></span>社区</a>
+      <a href="#honors"><span class="dot"></span>荣誉</a>
+      <a href="#partners"><span class="dot"></span>生态</a>
+    </nav>
+    <div class="nav__cta">
+      <span class="nav__lang">CN / EN</span>
+      <a href="https://openi.pcl.ac.cn/" class="btn btn--primary">进入平台 <span class="arr">→</span></a>
+      <button class="burger" aria-label="menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="top">
+  <canvas id="netcanvas"></canvas>
+  <div class="hero__grid"></div>
+
+  <div class="wrap hero__inner">
+    <div class="hero__top">
+      <span class="hero__badge"><span class="pulse"></span>中国算力网 C²NET 开源开放试验场</span>
+      <span class="hero__crumb">/ <b>启智AI开源社区</b> · 普惠算力</span>
+    </div>
+
+    <h1>
+      <span class="row"><span class="word d1">普</span><span class="word d2">惠</span><span class="word d3">算</span><span class="word d4">力</span></span>
+      <span class="row"><span class="word d5">为</span><em class="word d5">每一个</em></span>
+      <span class="row"><span class="serif word d6">AI 想法</span></span>
+      <span class="row"><span class="word d6">注入</span><span class="glitch word d6" data-t="澎湃动力">澎湃动力</span></span>
+    </h1>
+
+    <p class="hero__sub">
+      AI 开发者都爱用的<b>一站式 AI 开发平台</b>。提供代码托管、数据集管理、模型调试 / 训练 / 推理，
+     与充沛普惠算力的一站式软硬件环境 —— 让算力像水电一样流向每一个开发者。
+    </p>
+
+    <div class="hero__cta">
+      <a href="https://openi.pcl.ac.cn/" class="btn btn--primary">进入平台 <span class="arr">→</span></a>
+      <a href="https://openi.pcl.ac.cn/computingpower/demand" class="btn btn--amber">获取算力 <span class="arr">→</span></a>
+      <a href="https://openi.pcl.ac.cn/docs/index.html" class="btn btn--ghost">平台帮助文档</a>
+    </div>
+  </div>
+
+  <div class="hero__metrics">
+    <div class="metric-card">
+      <div class="k">总调度算力</div>
+      <div class="v">∞<span class="u">E FLOPS</span></div>
+    </div>
+    <div class="metric-card">
+      <div class="k">服务开发者</div>
+      <div class="v">17<span class="u">万+</span></div>
+    </div>
+    <div class="metric-card">
+      <div class="k">开放普惠算力</div>
+      <div class="v">数<span class="u">百万卡时</span></div>
+    </div>
+  </div>
+
+  <div class="hero__scroll">
+    SCROLL
+    <span class="line"></span>
+  </div>
+</section>
+
+<!-- ============ C²NET COMPUTE POWER ============ -->
+<section class="section compute" id="compute">
+  <div class="wrap">
+    <div class="compute__lede">
+      <div class="section__head reveal" style="margin-bottom:0">
+        <span class="eyebrow">C²NET · 中国算力网</span>
+        <h2>破解资源孤岛<br><em>释放协同价值</em></h2>
+      </div>
+      <div class="right reveal d2">
+        集成异构算力 · 跨域调度<br>
+        <b>开放 · 协同 · 普惠</b>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat reveal" style="--w:85%">
+        <div class="stat__idx">01 / NODES</div>
+        <div class="stat__num"><span class="counter" data-to="12">0</span><span class="plus">+</span></div>
+        <div class="stat__label"><b>接入算力中心</b> · 跨域互联</div>
+        <div class="stat__bar"><i></i></div>
+      </div>
+      <div class="stat reveal d1" style="--w:95%">
+        <div class="stat__idx">02 / SCALE</div>
+        <div class="stat__num"><span class="counter" data-to="3" data-suffix="E">0</span><span class="unit">FLOPS</span></div>
+        <div class="stat__label"><b>总调度算力</b> · 持续扩容</div>
+        <div class="stat__bar"><i></i></div>
+      </div>
+      <div class="stat reveal d2" style="--w:70%">
+        <div class="stat__idx">03 / TYPES</div>
+        <div class="stat__num"><span class="counter" data-to="9">0</span><span class="unit">种</span></div>
+        <div class="stat__label"><b>集成异构算力</b> · 国产优先</div>
+        <div class="stat__bar"><i></i></div>
+      </div>
+      <div class="stat reveal" style="--w:90%">
+        <div class="stat__idx">04 / DEVS</div>
+        <div class="stat__num"><span class="counter" data-to="17">0</span><span class="unit">万</span></div>
+        <div class="stat__label"><b>服务开发者</b> · 共建生态</div>
+        <div class="stat__bar"><i></i></div>
+      </div>
+      <div class="stat reveal d1" style="--w:78%">
+        <div class="stat__idx">05 / POWER</div>
+        <div class="stat__num"><span class="counter" data-to="500">0</span><span class="unit">万卡时</span></div>
+        <div class="stat__label"><b>开放普惠算力</b> · 免费普惠</div>
+        <div class="stat__bar"><i></i></div>
+      </div>
+      <div class="stat reveal d2" style="--w:88%">
+        <div class="stat__idx">06 / TASKS</div>
+        <div class="stat__num"><span class="counter" data-to="200">0</span><span class="unit">万</span></div>
+        <div class="stat__label"><b>支撑 AI 任务数</b> · 训练 / 推理</div>
+        <div class="stat__bar"><i></i></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CAPABILITIES ============ -->
+<section class="section caps" id="caps">
+  <div class="wrap">
+    <div class="section__head section__head--center reveal">
+      <span class="eyebrow">PLATFORM · 一站式开发</span>
+      <h2>从一行代码<br>到<em>一个模型</em>，全部在此完成</h2>
+      <p>代码托管、数据集管理、模型调试 / 训练 / 推理与充沛算力 —— 一站式 AI 服务软硬件环境。</p>
+    </div>
+
+    <div class="cap-grid">
+      <div class="cap reveal">
+        <span class="cap__no">01</span>
+        <div class="cap__icon"><svg viewBox="0 0 46 46" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16 6H8v32h8M30 6h8v32h-8M19 16l4-4 4 4M23 12v22"></path></svg></div>
+        <h3>代码托管</h3>
+        <p>类 Git 协作开发环境，支持开源项目孵化、团队协同与版本管理。</p>
+      </div>
+      <div class="cap reveal d1">
+        <span class="cap__no">02</span>
+        <div class="cap__icon"><svg viewBox="0 0 46 46" fill="none" stroke="currentColor" stroke-width="1.6"><ellipse cx="23" cy="11" rx="13" ry="5"></ellipse><path d="M10 11v12c0 2.8 5.8 5 13 5s13-2.2 13-5V11M10 23v12c0 2.8 5.8 5 13 5s13-2.2 13-5V23"></path></svg></div>
+        <h3>数据集管理</h3>
+        <p>统一数据资产管理，支持公开 / 私有数据集托管与版本追溯。</p>
+      </div>
+      <div class="cap reveal d2">
+        <span class="cap__no">03</span>
+        <div class="cap__icon"><svg viewBox="0 0 46 46" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="23" cy="23" r="4"></circle><circle cx="10" cy="10" r="3"></circle><circle cx="36" cy="10" r="3"></circle><circle cx="10" cy="36" r="3"></circle><circle cx="36" cy="36" r="3"></circle><path d="M12 12l7 7M34 12l-7 7M12 34l7-7M34 34l-7-7"></path></svg></div>
+        <h3>模型训练 / 推理</h3>
+        <p>模型调试、分布式训练与在线推理一体化，国产异构算力适配。</p>
+      </div>
+      <div class="cap reveal d3">
+        <span class="cap__no">04</span>
+        <div class="cap__icon"><svg viewBox="0 0 46 46" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M23 4l16 9v20l-16 9L7 33V13z"></path><path d="M23 4v9M23 33v9M7 13l9 4.5M39 13l-9 4.5"></path></svg></div>
+        <h3>普惠算力</h3>
+        <p>免费算力申请、跨域调度与国产算力支持，降低 AI 开发门槛。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ACTIVITIES ============ -->
+<section class="section acts" id="acts">
+  <div class="wrap">
+    <div class="section__head reveal">
+      <span class="eyebrow">EVENTS · 开发者活动</span>
+      <h2>多样化开发者活动<br><span class="serif">福利超多</span>，算力任你用</h2>
+      <p>开发者生态的精彩盛宴 —— 打榜赛事、智能体共创、技能计划持续开启。</p>
+    </div>
+
+    <div class="act-grid">
+      <article class="act reveal">
+        <div class="act__viz"><canvas data-viz="skill"></canvas><span class="act__tag">SKILL</span></div>
+        <div class="act__body">
+          <div class="act__date">2026.05.09 — 2026.05.31</div>
+          <h3>技能创造者计划</h3>
+          <p>面向 AI 技能构建者的孵化计划，打造可复用的智能体技能组件，共建技能生态。</p>
+          <a href="https://openi.pcl.ac.cn/OpenIActivities/SkillCreatorsHub" class="act__more">了解详情 <span class="arr">→</span></a>
+        </div>
+      </article>
+      <article class="act reveal d1">
+        <div class="act__viz"><canvas data-viz="grid"></canvas><span class="act__tag">CONTEST</span></div>
+        <div class="act__body">
+          <div class="act__date">2026.05.25 — 2026.07.24</div>
+          <h3>第三届 CCF 算力网系统与应用大赛</h3>
+          <p>聚焦算力网络系统与应用创新，汇聚全国顶尖团队同台竞技，推动算力网技术落地。</p>
+          <a href="https://app-kyxt.pcl.ac.cn/competitions/group/ubqs36gz" class="act__more">了解详情 <span class="arr">→</span></a>
+        </div>
+      </article>
+      <article class="act reveal d2">
+        <div class="act__viz"><canvas data-viz="weaver"></canvas><span class="act__tag">AGENT</span></div>
+        <div class="act__body">
+          <div class="act__date">2026.06.02 — 2026.12.31</div>
+          <h3>Agent Weaver · 智能体共创季</h3>
+          <p>智能体共创长季活动，提供算力、平台与导师支持，孵化有价值的 AI 智能体应用。</p>
+          <a href="https://openi.pcl.ac.cn/OpenIActivities/AgentWeaver" class="act__more">了解详情 <span class="arr">→</span></a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMMUNITY ============ -->
+<section class="section community" id="community">
+  <div class="wrap">
+    <div class="section__head reveal">
+      <span class="eyebrow">COMMUNITY · 开源贡献驱动</span>
+      <h2>以开源贡献驱动的<br><em>开发者社区</em></h2>
+      <p>良好的社区交流与成长氛围，吸引开发者共同建设开源生态。</p>
+    </div>
+
+    <div class="dev-grid">
+      <div class="dev reveal">
+        <span class="dev__corner">DEV / 01</span>
+        <p class="dev__quote">转眼间我已经加入启智社区整整一年的时间。这一年里，我在技术上取得了显著的进步，这份成长离不开平台提供的丰富资源和支持。希望在新的一年里，启智平台能够继续保持良好的发展态势，推动我国开源事业的发展。</p>
+        <div class="dev__person">
+          <div class="dev__avatar">蒋</div>
+          <div>
+            <div class="dev__name">蒋守佳</div>
+            <div class="dev__role">2024 年开源实习最高奖金获得者</div>
+            <div class="dev__id">ID：jiangwewqe</div>
+          </div>
+        </div>
+      </div>
+      <div class="dev reveal d1">
+        <span class="dev__corner">DEV / 02</span>
+        <p class="dev__quote">2024 我在启智社区学习到了非常多，从最初只是单纯的使用启智社区的算力到如今能够在启智社区上进行开源打榜和进行项目开发、维护，启智社区给了我非常多的帮助。希望 2025 年里，启智社区能够越来越好。</p>
+        <div class="dev__person">
+          <div class="dev__avatar alt1">陈</div>
+          <div>
+            <div class="dev__name">陈智成</div>
+            <div class="dev__role">OpenI 启智社区长江大学旅长</div>
+            <div class="dev__id">ID：chenzhicheng</div>
+          </div>
+        </div>
+      </div>
+      <div class="dev reveal d2">
+        <span class="dev__corner">DEV / 03</span>
+        <p class="dev__quote">有幸陪伴社区走过了好几年，见证了社区的一步步成长。2024 年通过在启智参加各种活动，提升了自己在国产算力方面的应用能力，期待 2025 在启智社区运用国产算力实现更多有意思的应用，在启智社区不断提升自己。</p>
+        <div class="dev__person">
+          <div class="dev__avatar alt2">丁</div>
+          <div>
+            <div class="dev__name">丁一超</div>
+            <div class="dev__role">OpenI 启智社区优秀体验官</div>
+            <div class="dev__id">ID：JeffDing</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="community__count reveal">
+      <span class="big">17万+</span> 开发者共同建设开源生态
+      <a href="https://docs.qq.com/form/page/DY1FJaE1HWndjYmh0" class="btn btn--ghost" style="margin-left:auto">我也要展示在这里</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HONORS ============ -->
+<section class="section honors" id="honors">
+  <div class="wrap">
+    <div class="section__head section__head--center reveal">
+      <span class="eyebrow">HONORS · 社区所获荣誉</span>
+      <h2>努力建设成为<br>开发者喜爱的 <em>AI 开源社区</em></h2>
+    </div>
+
+    <div class="timeline">
+      <div class="tl-node reveal">
+        <div class="tl-dot"></div>
+        <div class="tl-year">2021</div>
+        <div class="tl-tags"><span>开源启航</span><span>平台上线</span></div>
+      </div>
+      <div class="tl-node reveal d1">
+        <div class="tl-dot"></div>
+        <div class="tl-year">2022</div>
+        <div class="tl-tags"><span>算力扩容</span><span>赛事举办</span></div>
+      </div>
+      <div class="tl-node reveal d2">
+        <div class="tl-dot"></div>
+        <div class="tl-year">2023</div>
+        <div class="tl-tags"><span>生态拓展</span><span>国产适配</span></div>
+      </div>
+      <div class="tl-node reveal d3">
+        <div class="tl-dot"></div>
+        <div class="tl-year">2024</div>
+        <div class="tl-tags"><span>社区壮大</span><span>开源实习</span></div>
+      </div>
+      <div class="tl-node reveal d4">
+        <div class="tl-dot"></div>
+        <div class="tl-year">2025</div>
+        <div class="tl-tags"><span>C²NET</span><span>普惠算力</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PARTNERS ============ -->
+<section class="section partners" id="partners">
+  <div class="wrap">
+    <div class="section__head reveal">
+      <span class="eyebrow">ECOSYSTEM · 生态合作伙伴</span>
+      <h2>共建<em>开源算力</em>生态</h2>
+    </div>
+
+    <div class="partner-grid">
+      <div class="partner reveal"><span class="partner__mark"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l9 5v10l-9 5-9-5V7z"></path></svg>鹏城实验室</span></div>
+      <div class="partner reveal d1"><span class="partner__mark"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"></path></svg>C²NET</span></div>
+      <div class="partner reveal d2"><span class="partner__mark"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="4" width="16" height="16" rx="2"></rect><path d="M9 9h6v6H9z"></path></svg>NAIC</span></div>
+      <div class="partner reveal"><span class="partner__mark"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20V8l8-5 8 5v12M9 20v-6h6v6"></path></svg>CCF</span></div>
+      <div class="partner reveal d1"><span class="partner__mark"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3l9 16H3z"></path><path d="M12 9v6"></path></svg>WCNC</span></div>
+      <div class="partner reveal d2"><span class="partner__mark"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v4M12 18v4M2 12h4M18 12h4"></path></svg>高校联盟</span></div>
+    </div>
+
+    <div style="margin-top:36px;text-align:center" class="reveal">
+      <a href="https://docs.qq.com/form/page/DY055SU1xQ09mWVJ5" class="btn btn--ghost">成为合作伙伴 <span class="arr">→</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA STRIP ============ -->
+<section class="cta-strip">
+  <div class="cta-strip__deco">COMPUTE</div>
+  <div class="wrap cta-strip__inner">
+    <span class="eyebrow reveal" style="justify-content:center">START NOW · 立即开始</span>
+    <h2 class="reveal d1">让算力<span class="serif">像水电</span>一样<br>流向每一个开发者</h2>
+    <p class="reveal d2">免费申请普惠算力，一键进入一站式 AI 开发环境。代码、数据、模型、算力，全部就绪。</p>
+    <div class="cta-strip__btns reveal d3">
+      <a href="https://openi.pcl.ac.cn/" class="btn btn--primary">进入平台 <span class="arr">→</span></a>
+      <a href="https://openi.pcl.ac.cn/computingpower/demand" class="btn btn--amber">免费申请算力 <span class="arr">→</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__top">
+      <div class="footer__brand">
+        <a href="#" class="logo">
+          <span class="logo__mark"><svg viewBox="0 0 40 40" fill="none"><g class="ring"><circle cx="20" cy="20" r="16" stroke="#00E5C7" stroke-width="1.4" stroke-dasharray="4 6" opacity=".6"></circle></g><circle cx="20" cy="20" r="9" stroke="#00E5C7" stroke-width="1.6"></circle><circle cx="20" cy="20" r="3.2" fill="#00E5C7"></circle><circle cx="20" cy="4.5" r="2" fill="#FFB347"></circle></svg></span>
+          Open<b>I</b> <span style="font-family:var(--f-cn);font-weight:400;color:var(--text-dim);font-size:15px;margin-left:2px">启智</span>
+        </a>
+        <p>启智 AI 开源社区 —— 提供普惠算力的一站式 AI 开发平台。中国算力网（C²NET）开源开放试验场。</p>
+      </div>
+      <div class="footer__col">
+        <h4>平台</h4>
+        <a href="https://openi.pcl.ac.cn/">进入平台</a>
+        <a href="https://openi.pcl.ac.cn/modelbase/list">模型体验</a>
+        <a href="https://openi.pcl.ac.cn/computingpower/demand">获取算力</a>
+        <a href="https://openi.pcl.ac.cn/docs/index.html">帮助文档</a>
+      </div>
+      <div class="footer__col">
+        <h4>活动</h4>
+        <a href="https://openi.pcl.ac.cn/OpenIActivities/SkillCreatorsHub">技能创造者计划</a>
+        <a href="https://app-kyxt.pcl.ac.cn/competitions/group/ubqs36gz">CCF 算力网大赛</a>
+        <a href="https://openi.pcl.ac.cn/OpenIActivities/AgentWeaver">Agent Weaver</a>
+        <a href="https://naic.pcl.ac.cn/">全国人工智能大赛</a>
+      </div>
+      <div class="footer__col">
+        <h4>社区</h4>
+        <a href="#community">开发者故事</a>
+        <a href="#honors">社区荣誉</a>
+        <a href="#partners">生态合作</a>
+        <a href="https://docs.qq.com/form/page/DY1FJaE1HWndjYmh0">加入我们</a>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <p>秘书处邮箱：<a href="mailto:secretariat@openi.org.cn" style="color:var(--accent)">secretariat@openi.org.cn</a></p>
+      <div class="footer__social">
+        <a href="#" aria-label="GitHub"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12c0 4.4 2.9 8.1 6.8 9.4.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.4-2.2-.3-4.5-1.1-4.5-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.7 1 .8-.2 1.7-.3 2.5-.3s1.7.1 2.5.3c1.9-1.3 2.7-1 2.7-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.3 4.7-4.5 5 .3.3.6.9.6 1.8v2.6c0 .3.2.6.7.5C19.1 20.1 22 16.4 22 12c0-5.5-4.5-10-10-10z"></path></svg></a>
+        <a href="#" aria-label="Gitee"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.1 23C5.7 23 2 19.4 2 14.1c0-3.5 1.7-6.8 4.6-8.6 2.7-1.7 6.2-1.9 8.7-.4-1.8-1.2-4.3-1.2-6.5.2C5.4 7.1 4 10.5 4 14.1c0 3.4 2.4 6 6 6 2.2 0 3.6-1.3 3.6-3.1 0-1.8-1.3-3-3.4-3-1.3 0-2.2.6-2.6 1.5-.5-2 1.3-4 4-4 3.2 0 5.4 2.4 5.4 6 0 5.4-4.6 9.5-10.9 9.5z"></path></svg></a>
+        <a href="mailto:secretariat@openi.org.cn" aria-label="Mail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg></a>
+      </div>
+    </div>
+    <div class="footer__bottom" style="border-top:none;padding-top:0">
+      <p class="addr">北京市海淀区成府路 28 号 12 层 4-1206 · 广东省深圳市南山区沙河西路 6001 号 鹏城实验室石壁龙园区</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   HERO — compute-network canvas animation
+   nodes + edges + flowing data particles
+   ============================================================ */
+(function(){
+  const canvas = document.getElementById('netcanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let W,H,dpr, nodes=[], particles=[];
+  const mouse = {x:-9999,y:-9999};
+
+  function resize(){
+    dpr = Math.min(window.devicePixelRatio||1, 2);
+    const r = canvas.getBoundingClientRect();
+    W = r.width; H = r.height;
+    canvas.width = W*dpr; canvas.height = H*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    buildNodes();
+  }
+  function buildNodes(){
+    nodes = [];
+    const cols = Math.max(5, Math.floor(W/150));
+    const rows = Math.max(4, Math.floor(H/130));
+    const padX = W*0.08, padY = H*0.1;
+    for(let r=0;r<rows;r++){
+      for(let c=0;c<cols;c++){
+        const x = padX + (W-2*padX)*(c/(cols-1)) + (Math.random()-.5)*40;
+        const y = padY + (H-2*padY)*(r/(rows-1)) + (Math.random()-.5)*40;
+        nodes.push({x,y, r: Math.random()<.15?3.4:1.6, hub: Math.random()<.15, phase: Math.random()*Math.PI*2});
+      }
+    }
+    // build edges to nearby nodes
+    nodes.forEach((n,i)=>{
+      n.edges=[];
+      nodes.forEach((m,j)=>{
+        if(i===j) return;
+        const d = Math.hypot(n.x-m.x,n.y-m.y);
+        if(d<150) n.edges.push(j);
+      });
+    });
+  }
+  function spawnParticle(){
+    if(particles.length>60) return;
+    const i = Math.floor(Math.random()*nodes.length);
+    const n = nodes[i]; if(!n||!n.edges.length) return;
+    const j = n.edges[Math.floor(Math.random()*n.edges.length)];
+    particles.push({from:i,to:j,t:0, speed:0.004+Math.random()*0.006, color: Math.random()<.5?'#00E5C7':'#6EA8FF'});
+  }
+  function loop(){
+    ctx.clearRect(0,0,W,H);
+    // edges
+    ctx.lineWidth=1;
+    for(let i=0;i<nodes.length;i++){
+      const n=nodes[i];
+      for(const j of n.edges){
+        if(j<i) continue;
+        const m=nodes[j];
+        ctx.strokeStyle='rgba(0,229,199,0.05)';
+        ctx.beginPath();ctx.moveTo(n.x,n.y);ctx.lineTo(m.x,m.y);ctx.stroke();
+      }
+    }
+    // mouse attraction lines
+    for(const n of nodes){
+      const d=Math.hypot(n.x-mouse.x,n.y-mouse.y);
+      if(d<160){
+        ctx.strokeStyle='rgba(0,229,199,'+(0.25*(1-d/160))+')';
+        ctx.beginPath();ctx.moveTo(n.x,n.y);ctx.lineTo(mouse.x,mouse.y);ctx.stroke();
+      }
+    }
+    // particles
+    if(Math.random()<0.5) spawnParticle();
+    for(let p=particles.length-1;p>=0;p--){
+      const pt=particles[p];
+      const a=nodes[pt.from], b=nodes[pt.to]; if(!a||!b){particles.splice(p,1);continue;}
+      pt.t+=pt.speed;
+      const x=a.x+(b.x-a.x)*pt.t, y=a.y+(b.y-a.y)*pt.t;
+      ctx.fillStyle=pt.color;
+      ctx.beginPath();ctx.arc(x,y,1.6,0,Math.PI*2);ctx.fill();
+      ctx.shadowColor=pt.color;ctx.shadowBlur=8;
+      ctx.beginPath();ctx.arc(x,y,1.2,0,Math.PI*2);ctx.fill();
+      ctx.shadowBlur=0;
+      if(pt.t>=1) particles.splice(p,1);
+    }
+    // nodes
+    for(const n of nodes){
+      n.phase+=0.02;
+      const pulse = n.hub? 0.5+0.5*Math.sin(n.phase):1;
+      const r = n.r*pulse;
+      // glow
+      if(n.hub){
+        ctx.shadowColor='#00E5C7';ctx.shadowBlur=14;
+        ctx.fillStyle='rgba(0,229,199,'+(0.7*pulse)+')';
+      } else {
+        ctx.shadowBlur=0;
+        ctx.fillStyle='rgba(180,210,230,0.4)';
+      }
+      ctx.beginPath();ctx.arc(n.x,n.y,Math.max(0.6,r),0,Math.PI*2);ctx.fill();
+      ctx.shadowBlur=0;
+    }
+    requestAnimationFrame(loop);
+  }
+  window.addEventListener('resize',resize);
+  canvas.parentElement.addEventListener('mousemove',e=>{
+    const r=canvas.getBoundingClientRect();
+    mouse.x=e.clientX-r.left; mouse.y=e.clientY-r.top;
+  });
+  canvas.parentElement.addEventListener('mouseleave',()=>{mouse.x=-9999;mouse.y=-9999});
+  resize(); loop();
+})();
+
+/* ============================================================
+   ACTIVITY card mini visualizers
+   ============================================================ */
+(function(){
+  document.querySelectorAll('canvas[data-viz]').forEach(cv=>{
+    const ctx=cv.getContext('2d');
+    let w,h,dpr;
+    function rs(){dpr=Math.min(window.devicePixelRatio||1,2);const r=cv.getBoundingClientRect();w=r.width;h=r.height;cv.width=w*dpr;cv.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);}
+    rs();window.addEventListener('resize',rs);
+    const type=cv.dataset.viz;
+    let t=0;
+    function draw(){
+      ctx.clearRect(0,0,w,h);
+      const g=ctx.createLinearGradient(0,0,w,h);
+      g.addColorStop(0,'rgba(0,229,199,0.06)');
+      g.addColorStop(1,'rgba(255,179,71,0.04)');
+      ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='rgba(0,229,199,0.25)';ctx.lineWidth=1;
+      if(type==='grid'){
+        for(let x=0;x<w;x+=14){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.globalAlpha=.18;ctx.stroke();}
+        for(let y=0;y<h;y+=14){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+        ctx.globalAlpha=1;
+        // moving block
+        const bx=(t*0.6)%w;
+        ctx.fillStyle='rgba(255,179,71,0.5)';
+        ctx.fillRect(bx,h/2-3,18,6);
+        ctx.shadowColor='#FFB347';ctx.shadowBlur=10;
+        ctx.fillRect(bx,h/2-3,18,6);ctx.shadowBlur=0;
+      } else if(type==='skill'){
+        // concentric rings
+        for(let i=0;i<5;i++){
+          const rr=10+i*14;
+          ctx.globalAlpha=.5-i*0.08;
+          ctx.beginPath();ctx.arc(w/2,h/2,rr,0,Math.PI*2);ctx.stroke();
+        }
+        ctx.globalAlpha=1;
+        const a=t*0.03;
+        ctx.fillStyle='#00E5C7';ctx.shadowColor='#00E5C7';ctx.shadowBlur=10;
+        ctx.beginPath();ctx.arc(w/2+Math.cos(a)*40,h/2+Math.sin(a)*40,3,0,Math.PI*2);ctx.fill();
+        ctx.shadowBlur=0;
+      } else { // weaver - woven lines
+        for(let i=0;i<7;i++){
+          ctx.globalAlpha=.5-i*0.05;
+          ctx.beginPath();
+          for(let x=0;x<=w;x+=4){
+            const y=h/2+Math.sin(x*0.03+t*0.02+i*0.8)*18;
+            x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+          }
+          ctx.strokeStyle=i%2?'rgba(0,229,199,0.6)':'rgba(110,168,255,0.5)';
+          ctx.stroke();
+        }
+        ctx.globalAlpha=1;
+      }
+      t++;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  });
+})();
+
+/* ============================================================
+   Reveal on scroll + counters
+   ============================================================ */
+(function(){
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.classList.add('in');
+        // counters
+        e.target.querySelectorAll('.counter').forEach(c=>{
+          if(c.dataset.done) return; c.dataset.done=1;
+          const to=+c.dataset.to, suf=c.dataset.suffix||'';
+          const dur=1600; const t0=performance.now();
+          function step(now){
+            const k=Math.min(1,(now-t0)/dur);
+            const e2=1-Math.pow(1-k,3);
+            c.textContent=Math.round(to*e2)+suf;
+            if(k<1) requestAnimationFrame(step); else c.textContent=to+suf;
+          }
+          requestAnimationFrame(step);
+        });
+        io.unobserve(e.target);
+      }
+    });
+  },{threshold:.18, rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+})();
+
+/* ============================================================
+   Nav scroll state + cursor glow
+   ============================================================ */
+(function(){
+  const nav=document.getElementById('nav');
+  const glow=document.getElementById('cursorGlow');
+  window.addEventListener('scroll',()=>{ nav.classList.toggle('scrolled',window.scrollY>30); },{passive:true});
+  if(window.matchMedia('(pointer:fine)').matches){
+    window.addEventListener('mousemove',e=>{
+      glow.style.left=e.clientX+'px'; glow.style.top=e.clientY+'px';
+    },{passive:true});
+    glow.style.opacity='1';
+  } else glow.style.display='none';
+})();
+
+/* ============================================================
+   Smooth anchor (nav)
+   ============================================================ */
+(function(){
+  document.querySelectorAll('.nav__links a[href^="#"]').forEach(a=>{
+    a.addEventListener('click',e=>{
+      const id=a.getAttribute('href');
+      const el=document.querySelector(id);
+      if(el){e.preventDefault();el.scrollIntoView({behavior:'smooth',block:'start'});}
+    });
+  });
+})();
+</script>
+
+
+</body></html>
