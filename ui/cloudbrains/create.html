@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>计算任务 · OpenI 启智</title>
+<meta name="description" content="OpenI 启智 — 计算任务管理。查看调试、训练、推理、评测任务，管理普惠算力资源。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700&amp;family=Sora:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;family=Noto+Sans+SC:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   OpenI · Neural Forge — 计算任务 (CloudBrains)
+   Functional, data-dense, minimal animation. Focus on
+   usability and at-a-glance status comprehension.
+   ============================================================ */
+:root{
+  --bg:        #07090C;
+  --bg-2:      #0B0E14;
+  --surface:   #0F131C;
+  --surface-2: #161C28;
+  --surface-3: #1E2533;
+  --surface-hover:#222B3C;
+  --accent:    #00E5C7;
+  --accent-soft:#13E3C0;
+  --accent-2:  #FFB347;
+  --accent-3:  #6EA8FF;
+  --magenta:   #FF6E9C;
+  --green:     #4ADE80;
+  --red:       #F87171;
+  --yellow:    #FBBF24;
+  --gray:      #94A3B8;
+  --text:      #EAF0F6;
+  --text-dim:  #8B97A8;
+  --text-mute: #5C6675;
+  --border:    rgba(255,255,255,.08);
+  --border-2:  rgba(255,255,255,.14);
+
+  --f-display: 'Unbounded','Noto Sans SC',sans-serif;
+  --f-body:    'Sora','Noto Sans SC',sans-serif;
+  --f-mono:    'JetBrains Mono','Noto Sans SC',monospace;
+  --f-cn:      'Noto Sans SC',sans-serif;
+
+  --nav-h: 56px;
+  --side-w: 220px;
+  --ease: cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--f-body);background:var(--bg);color:var(--text);line-height:1.55;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-size:14px;
+}
+::selection{background:var(--accent);color:#04140f}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--surface-3);border-radius:20px;border:2px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:var(--text-mute)}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select{font-family:inherit;font-size:inherit;color:inherit}
+img,svg{display:block}
+
+/* ============================================================
+   TOP NAV (compact)
+   ============================================================ */
+.topnav{
+  position:sticky;top:0;z-index:200;height:var(--nav-h);background:rgba(7,9,12,.92);
+  backdrop-filter:blur(14px) saturate(1.4);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;
+}
+.topnav__inner{max-width:1700px;margin:0 auto;padding:0 20px;width:100%;display:flex;align-items:center;gap:24px}
+.logo{display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-weight:700;font-size:17px;letter-spacing:-.02em;flex:none}
+.logo__mark{width:26px;height:26px;flex:none}
+.logo__mark svg{width:100%;height:100%}
+.logo__mark .ring{animation:spin 16s linear infinite;transform-origin:center}
+@keyframes spin{to{transform:rotate(360deg)}}
+.logo b{color:var(--accent)}
+.logo .cn{font-family:var(--f-cn);font-weight:400;color:var(--text-dim);font-size:12px;margin-left:1px}
+.navlinks{display:flex;align-items:center;gap:1px;flex:1}
+.navlinks a{
+  font-size:13px;color:var(--text-dim);padding:7px 12px;border-radius:7px;
+  transition:color .2s,background .2s;position:relative;
+}
+.navlinks a:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.navlinks a.active{color:var(--accent)}
+.navlinks a.active::after{content:"";position:absolute;left:12px;right:12px;bottom:-1px;height:2px;background:var(--accent);border-radius:2px}
+.navright{display:flex;align-items:center;gap:7px;flex:none}
+.iconbtn{
+  width:34px;height:34px;border-radius:8px;border:1px solid var(--border);display:grid;place-items:center;
+  color:var(--text-dim);transition:.2s;position:relative;
+}
+.iconbtn:hover{border-color:var(--border-2);color:var(--text)}
+.iconbtn svg{width:16px;height:16px}
+.badge{position:absolute;top:-3px;right:-3px;min-width:15px;height:15px;padding:0 4px;border-radius:8px;background:var(--surface-3);color:var(--text-mute);font-family:var(--f-mono);font-size:9px;font-weight:700;display:grid;place-items:center;line-height:1}
+.create-btn{
+  display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:12px;font-weight:600;
+  padding:7px 13px;border-radius:8px;background:var(--accent);color:#04140f;transition:.2s;
+}
+.create-btn:hover{background:#3ff0d8}
+.create-btn svg{width:12px;height:12px}
+.user-btn{
+  display:flex;align-items:center;gap:7px;padding:3px 9px 3px 3px;border-radius:999px;border:1px solid var(--border);transition:.2s;
+}
+.user-btn:hover{border-color:var(--border-2)}
+.avatar{width:26px;height:26px;border-radius:50%;flex:none;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:11px;color:#04140f;background:linear-gradient(135deg,var(--accent-2),#ffd28a)}
+.user-btn .uname{font-size:12.5px;font-weight:500;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user-btn .chev{width:11px;height:11px;color:var(--text-mute)}
+
+/* ============================================================
+   SHELL
+   ============================================================ */
+.shell{display:flex;align-items:flex-start;min-height:calc(100vh - var(--nav-h))}
+.sidebar{
+  position:sticky;top:var(--nav-h);width:var(--side-w);height:calc(100vh - var(--nav-h));
+  flex:none;border-right:1px solid var(--border);overflow-y:auto;padding:16px 12px 24px;background:var(--bg-2);
+}
+.side-brand{font-family:var(--f-mono);font-size:9px;letter-spacing:.18em;color:var(--text-mute);text-transform:uppercase;padding:4px 12px 10px}
+.side-group{margin-bottom:16px}
+.side-grp-label{font-family:var(--f-mono);font-size:9px;letter-spacing:.14em;color:var(--text-mute);text-transform:uppercase;padding:0 12px 7px}
+.side-item{
+  display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:13px;color:var(--text-dim);
+  transition:background .2s,color .2s;position:relative;margin-bottom:1px;
+}
+.side-item .ic{width:16px;height:16px;flex:none;color:var(--text-mute);transition:color .2s}
+.side-item .ic svg{width:100%;height:100%}
+.side-item:hover{background:var(--surface);color:var(--text)}
+.side-item:hover .ic{color:var(--text-dim)}
+.side-item.active{background:rgba(0,229,199,.08);color:var(--accent)}
+.side-item.active .ic{color:var(--accent)}
+.side-item.active::before{content:"";position:absolute;left:0;top:7px;bottom:7px;width:2px;background:var(--accent);border-radius:2px}
+.side-item .cnt{margin-left:auto;font-family:var(--f-mono);font-size:10px;color:var(--text-mute);background:var(--surface-2);padding:1px 6px;border-radius:5px}
+.side-item.active .cnt{background:rgba(0,229,199,.12);color:var(--accent)}
+.side-foot{margin-top:auto;padding:12px 12px 4px;border-top:1px solid var(--border)}
+.side-foot a{display:block;font-size:11.5px;color:var(--text-mute);padding:4px 0;transition:color .2s}
+.side-foot a:hover{color:var(--accent)}
+
+.main{flex:1;min-width:0;padding:22px 26px 40px;max-width:calc(100% - var(--side-w))}
+
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
+.pagehead{margin-bottom:18px}
+.pagehead__top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:10px}
+.pagehead__title{display:flex;align-items:center;gap:12px}
+.pagehead__title h1{font-family:var(--f-display);font-weight:600;font-size:24px;letter-spacing:-.02em}
+.breadcrumb{font-family:var(--f-mono);font-size:11px;color:var(--text-mute);margin-bottom:4px}
+.breadcrumb b{color:var(--text-dim)}
+.breadcrumb span{color:var(--text-mute)}
+.pagehead__actions{display:flex;gap:8px;align-items:center}
+.btn{
+  display:inline-flex;align-items:center;gap:.45em;font-family:var(--f-body);font-size:13px;font-weight:500;
+  padding:8px 14px;border-radius:8px;transition:.2s;white-space:nowrap;
+}
+.btn--primary{background:var(--accent);color:#04140f;font-weight:600}
+.btn--primary:hover{background:#3ff0d8}
+.btn--primary svg{width:13px;height:13px}
+.btn--ghost{border:1px solid var(--border-2);color:var(--text);background:rgba(255,255,255,.02)}
+.btn--ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn--ghost svg{width:14px;height:14px}
+
+/* notice bar */
+.notice{
+  display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-radius:10px;
+  background:rgba(255,179,71,.06);border:1px solid rgba(255,179,71,.18);margin-bottom:18px;
+}
+.notice__ic{width:18px;height:18px;color:var(--accent-2);flex:none;margin-top:1px}
+.notice__ic svg{width:100%;height:100%}
+.notice__txt{font-size:12.5px;color:var(--text-dim);line-height:1.6;flex:1}
+.notice__txt b{color:var(--text);font-weight:600}
+.notice__txt .hl{color:var(--accent-2);font-weight:500}
+.notice__txt a{color:var(--accent);font-family:var(--f-mono);font-size:12px}
+.notice__txt a:hover{text-decoration:underline}
+.notice__close{color:var(--text-mute);font-size:16px;padding:0 4px;transition:color .2s;flex:none}
+.notice__close:hover{color:var(--text)}
+
+/* ============================================================
+   SUMMARY STATS STRIP
+   ============================================================ */
+.sumstrip{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);
+  border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:18px;
+}
+.sum{
+  background:var(--bg-2);padding:14px 18px;display:flex;align-items:center;gap:13px;transition:background .2s;
+}
+.sum:hover{background:var(--surface)}
+.sum__ic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;flex:none}
+.sum__ic svg{width:17px;height:17px}
+.sum__ic.g{background:rgba(74,222,128,.1);color:var(--green)}
+.sum__ic.a{background:rgba(0,229,199,.1);color:var(--accent)}
+.sum__ic.y{background:rgba(251,191,36,.1);color:var(--yellow)}
+.sum__ic.r{background:rgba(248,113,113,.1);color:var(--red)}
+.sum__ic.b{background:rgba(110,168,255,.1);color:var(--accent-3)}
+.sum__txt .v{font-family:var(--f-display);font-weight:600;font-size:20px;letter-spacing:-.01em;line-height:1.2}
+.sum__txt .v .u{font-size:12px;color:var(--text-mute);font-weight:400;margin-left:2px}
+.sum__txt .l{font-size:11px;color:var(--text-mute);margin-top:2px}
+
+/* ============================================================
+   FILTER BAR
+   ============================================================ */
+.filters{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 16px;
+  border:1px solid var(--border);border-radius:12px;background:var(--surface);margin-bottom:14px;
+}
+.select{position:relative;flex:1;min-width:150px;max-width:260px}
+.select__btn{
+  width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:8px 12px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg-2);
+  font-size:13px;color:var(--text);transition:border-color .2s;min-height:36px;
+}
+.select__btn:hover{border-color:var(--accent)}
+.select__btn .lb{display:flex;align-items:center;gap:7px;color:var(--text-dim)}
+.select__btn .lb .k{color:var(--text-mute);font-size:11px}
+.select__btn .vl{color:var(--text);font-weight:500}
+.select__btn .chev{width:13px;height:13px;color:var(--text-mute);transition:transform .2s}
+.select.open .select__btn .chev{transform:rotate(180deg)}
+.select.open .select__btn{border-color:var(--accent)}
+.select__menu{
+  position:absolute;top:calc(100% + 6px);left:0;right:0;min-width:100%;background:var(--surface);
+  border:1px solid var(--border-2);border-radius:10px;padding:6px;max-height:320px;overflow-y:auto;
+  opacity:0;visibility:hidden;transform:translateY(-4px);transition:.2s;z-index:50;
+  box-shadow:0 20px 50px -15px rgba(0,0,0,.7);
+}
+.select.open .select__menu{opacity:1;visibility:visible;transform:none}
+.opt{
+  display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;font-size:12.5px;color:var(--text-dim);
+  transition:background .15s,color .15s;cursor:pointer;white-space:nowrap;
+}
+.opt:hover{background:var(--surface-2);color:var(--text)}
+.opt.sel{color:var(--accent)}
+.opt.sel::after{content:"✓";margin-left:auto;font-family:var(--f-mono);color:var(--accent)}
+.opt .ct{margin-left:auto;font-family:var(--f-mono);font-size:10px;color:var(--text-mute)}
+.opt__search{
+  position:sticky;top:0;background:var(--surface);padding:6px;margin-bottom:4px;border-bottom:1px solid var(--border);
+}
+.opt__search input{
+  width:100%;background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;
+  font-size:12px;color:var(--text);outline:none;
+}
+.opt__search input:focus{border-color:var(--accent)}
+.opt__search input::placeholder{color:var(--text-mute)}
+.filters__right{display:flex;gap:8px;align-items:center;margin-left:auto}
+.search-box{
+  position:relative;display:flex;align-items:center;gap:7px;padding:0 12px;border:1px solid var(--border-2);
+  border-radius:8px;background:var(--bg-2);min-height:36px;transition:border-color .2s;
+}
+.search-box:focus-within{border-color:var(--accent)}
+.search-box svg{width:14px;height:14px;color:var(--text-mute);flex:none}
+.search-box input{background:none;border:none;outline:none;width:160px;font-size:12.5px;color:var(--text)}
+.search-box input::placeholder{color:var(--text-mute)}
+.iconbtn-sm{
+  width:36px;height:36px;border-radius:8px;border:1px solid var(--border-2);display:grid;place-items:center;
+  color:var(--text-dim);transition:.2s;background:var(--bg-2);
+}
+.iconbtn-sm:hover{border-color:var(--accent);color:var(--accent)}
+.iconbtn-sm svg{width:15px;height:15px}
+
+/* active filter chips */
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;min-height:0}
+.chips:empty{display:none}
+.chip{
+  display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--text);
+  background:rgba(0,229,199,.08);border:1px solid rgba(0,229,199,.25);padding:5px 10px 5px 12px;border-radius:7px;
+}
+.chip .k{color:var(--accent);font-family:var(--f-mono);font-size:10px}
+.chip .x{color:var(--text-mute);cursor:pointer;padding:0 2px;font-size:14px;line-height:1;transition:color .2s}
+.chip .x:hover{color:var(--red)}
+.chips__clear{font-family:var(--f-mono);font-size:11px;color:var(--text-mute);padding:5px 8px;transition:color .2s}
+.chips__clear:hover{color:var(--accent)}
+
+/* ============================================================
+   DATA TABLE
+   ============================================================ */
+.table-wrap{
+  border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface);
+}
+.table-scroll{overflow-x:auto}
+table.tasks{width:100%;border-collapse:collapse;min-width:1100px}
+table.tasks th{
+  background:var(--bg-2);text-align:left;font-family:var(--f-mono);font-size:11px;font-weight:500;
+  letter-spacing:.04em;color:var(--text-mute);text-transform:uppercase;padding:12px 16px;
+  border-bottom:1px solid var(--border);white-space:nowrap;user-select:none;cursor:pointer;position:relative;
+}
+table.tasks th:hover{color:var(--text-dim)}
+table.tasks th .sort{display:inline-block;width:10px;color:var(--text-mute);margin-left:4px}
+table.tasks th.sorted{color:var(--accent)}
+table.tasks th.sorted .sort{color:var(--accent)}
+table.tasks td{
+  padding:13px 16px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text-dim);
+  vertical-align:top;white-space:nowrap;
+}
+table.tasks tbody tr{transition:background .15s}
+table.tasks tbody tr:hover{background:var(--surface-2)}
+table.tasks tbody tr:last-child td{border-bottom:none}
+table.tasks td .mono{font-family:var(--f-mono);font-size:12.5px}
+/* task name */
+.tname{display:flex;align-items:center;gap:8px}
+.tname a{font-family:var(--f-mono);font-size:12.5px;color:var(--accent);font-weight:500;transition:color .2s}
+.tname a:hover{color:#3ff0d8;text-decoration:underline}
+.ttype-badge{
+  font-family:var(--f-mono);font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;
+  display:inline-flex;align-items:center;gap:4px;white-space:nowrap;
+}
+.ttype-badge .d{width:5px;height:5px;border-radius:50%}
+.ttype-TRAIN{background:rgba(0,229,199,.1);color:var(--accent)}
+.ttype-TRAIN .d{background:var(--accent)}
+.ttype-DEBUG{background:rgba(110,168,255,.1);color:var(--accent-3)}
+.ttype-DEBUG .d{background:var(--accent-3)}
+.ttype-INFERENCE{background:rgba(255,179,71,.1);color:var(--accent-2)}
+.ttype-INFERENCE .d{background:var(--accent-2)}
+/* status badge */
+.status{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:11px;font-weight:600;padding:3px 9px;border-radius:6px;white-space:nowrap}
+.status .d{width:6px;height:6px;border-radius:50%}
+.status-SUCCEEDED{background:rgba(74,222,128,.1);color:var(--green)}
+.status-SUCCEEDED .d{background:var(--green)}
+.status-FAILED{background:rgba(248,113,113,.1);color:var(--red)}
+.status-FAILED .d{background:var(--red)}
+.status-STOPPED{background:rgba(148,163,184,.12);color:var(--gray)}
+.status-STOPPED .d{background:var(--gray)}
+.status-RUNNING{background:rgba(0,229,199,.1);color:var(--accent)}
+.status-RUNNING .d{background:var(--accent);animation:bk 1.6s infinite}
+.status-WAITING{background:rgba(251,191,36,.1);color:var(--yellow)}
+.status-WAITING .d{background:var(--yellow);animation:bk 1.6s infinite}
+@keyframes bk{0%,100%{opacity:1}50%{opacity:.3}}
+/* resource info */
+.res-info{display:flex;flex-direction:column;gap:3px}
+.res-info .ln{display:flex;gap:6px;font-size:11.5px;white-space:nowrap}
+.res-info .ln .k{color:var(--text-mute);min-width:60px}
+.res-info .ln .v{color:var(--text-dim);font-weight:500}
+.res-info .ln .v.hl{color:var(--accent)}
+/* duration */
+.dur{font-family:var(--f-mono);font-size:12px;color:var(--text-dim)}
+.dur.dim{color:var(--text-mute)}
+/* project */
+.proj{font-size:12px;color:var(--text-dim)}
+.proj .u{color:var(--accent-3);font-weight:500}
+.proj .sep{color:var(--text-mute);margin:0 4px}
+.proj .r{color:var(--text-dim)}
+/* actions */
+.acts-cell{position:relative}
+.acts-btns{display:flex;gap:4px;align-items:center}
+.act-icon{
+  width:30px;height:30px;border-radius:7px;display:grid;place-items:center;color:var(--text-mute);
+  border:1px solid transparent;transition:.2s;
+}
+.act-icon:hover{color:var(--accent);border-color:var(--border);background:var(--surface-3)}
+.act-icon.danger:hover{color:var(--red)}
+.act-icon svg{width:14px;height:14px}
+.act-more{
+  width:30px;height:30px;border-radius:7px;display:grid;place-items:center;color:var(--text-mute);
+  border:1px solid transparent;transition:.2s;position:relative;
+}
+.act-more:hover{color:var(--text);background:var(--surface-3)}
+.act-more.open{color:var(--accent);background:var(--surface-3)}
+.act-more svg{width:14px;height:14px}
+.act-menu{
+  position:absolute;right:0;top:calc(100% + 4px);min-width:170px;background:var(--surface);
+  border:1px solid var(--border-2);border-radius:9px;padding:5px;z-index:40;
+  opacity:0;visibility:hidden;transform:translateY(-4px);transition:.18s;
+  box-shadow:0 20px 50px -15px rgba(0,0,0,.7);
+}
+.act-more.open .act-menu{opacity:1;visibility:visible;transform:none}
+.act-menu a,.act-menu button{
+  display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:7px 10px;border-radius:6px;
+  font-size:12.5px;color:var(--text-dim);transition:.15s;
+}
+.act-menu a:hover,.act-menu button:hover{background:var(--surface-2);color:var(--text)}
+.act-menu .ic{width:14px;height:14px;color:var(--text-mute);flex:none}
+.act-menu .ic svg{width:100%;height:100%}
+.act-menu .ic.danger{color:var(--red)}
+.act-menu .sep{height:1px;background:var(--border);margin:4px 6px}
+/* checkbox col */
+.cb{width:16px;height:16px;accent-color:var(--accent);cursor:pointer}
+
+/* empty row */
+.empty-row td{text-align:center;padding:40px;color:var(--text-mute)}
+
+/* ============================================================
+   TABLE FOOTER — bulk + pagination
+   ============================================================ */
+.tbl-foot{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  padding:12px 16px;border-top:1px solid var(--border);background:var(--bg-2);
+}
+.tbl-foot__l{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.bulk-info{font-size:12px;color:var(--text-dim);display:flex;align-items:center;gap:8px}
+.bulk-info b{color:var(--accent);font-family:var(--f-mono)}
+.bulk-actions{display:flex;gap:6px}
+.bulk-actions button{
+  font-size:12px;padding:5px 11px;border-radius:6px;border:1px solid var(--border-2);color:var(--text-dim);
+  background:var(--surface);transition:.2s;
+}
+.bulk-actions button:hover{border-color:var(--accent);color:var(--accent)}
+.bulk-actions button.danger:hover{border-color:var(--red);color:var(--red)}
+.psize{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mute)}
+.psize select{
+  background:var(--surface);border:1px solid var(--border-2);border-radius:6px;padding:4px 8px;color:var(--text);
+  font-size:12px;outline:none;cursor:pointer;
+}
+.psize select:focus{border-color:var(--accent)}
+.pager{display:flex;align-items:center;gap:4px}
+.pager button{
+  min-width:30px;height:30px;padding:0 8px;border-radius:7px;border:1px solid var(--border);color:var(--text-dim);
+  background:var(--surface);font-family:var(--f-mono);font-size:12px;transition:.2s;
+}
+.pager button:hover:not(:disabled):not(.active){border-color:var(--accent);color:var(--accent)}
+.pager button.active{background:var(--accent);color:#04140f;border-color:var(--accent);font-weight:600}
+.pager button:disabled{opacity:.4;cursor:not-allowed}
+.pager .dots{color:var(--text-mute);padding:0 4px}
+.jump{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mute)}
+.jump input{width:42px;background:var(--surface);border:1px solid var(--border-2);border-radius:6px;padding:4px;text-align:center;font-size:12px;color:var(--text);outline:none}
+.jump input:focus{border-color:var(--accent)}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.foot{
+  margin-top:24px;border-top:1px solid var(--border);padding:18px 0 0;
+  display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap;
+}
+.foot__l{font-size:11px;color:var(--text-mute);line-height:1.7;max-width:560px}
+.foot__l .powered{font-family:var(--f-mono);margin-top:5px}
+.foot__l .powered b{color:var(--accent)}
+.foot__r{display:flex;gap:22px;flex-wrap:wrap}
+.foot__col h5{font-family:var(--f-mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-mute);margin-bottom:6px}
+.foot__col a{display:block;font-size:11px;color:var(--text-dim);padding:2px 0;transition:color .2s}
+.foot__col a:hover{color:var(--accent)}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width:1100px){
+  .sumstrip{grid-template-columns:repeat(3,1fr)}
+}
+@media (max-width:860px){
+  :root{--side-w:0px}
+  .sidebar{display:none}
+  .main{padding:18px 14px 32px;max-width:100%}
+  .navlinks{display:none}
+  .user-btn .uname{display:none}
+  .sumstrip{grid-template-columns:repeat(2,1fr)}
+  .filters{flex-direction:column;align-items:stretch}
+  .select{max-width:none}
+  .filters__right{margin-left:0;flex-wrap:wrap}
+  .search-box input{width:120px}
+}
+@media (max-width:520px){
+  .sumstrip{grid-template-columns:1fr}
+  .pagehead__title h1{font-size:20px}
+}
+
+/* ============================================================
+   CREATE TASK FORM - DARK MODE TWEAKS
+   ============================================================ */
+.create-form-wrap {
+  padding-top: 20px;
+}
+.ai-task-create-global-c {
+  color: var(--text);
+}
+.ai-task-create-global-c .create-task-warp {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+}
+.ai-task-create-global-c .area-l-title {
+  display: none; /* Hide old breadcrumb, we use new pagehead */
+}
+.ai-task-create-global-c .main-title {
+  color: var(--text);
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border-2);
+  padding-bottom: 12px;
+}
+.ai-task-create-global-c .form-row {
+  display: flex;
+  margin-bottom: 24px;
+  align-items: flex-start;
+}
+.ai-task-create-global-c .form-row .left-area {
+  display: flex;
+  flex: 1;
+}
+.ai-task-create-global-c .form-row .title {
+  width: 130px;
+  color: var(--text-dim);
+  font-size: 13.5px;
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  padding-top: 8px;
+}
+.ai-task-create-global-c .form-row .title .required::before {
+  content: "*";
+  color: var(--red);
+  margin-right: 4px;
+}
+.ai-task-create-global-c .form-row .content {
+  flex: 1;
+}
+.ai-task-create-global-c .task-items-c {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.ai-task-create-global-c .task-item {
+  border: 1px solid var(--border-2);
+  background: var(--bg-2);
+  padding: 16px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1;
+  min-width: 140px;
+  max-width: 180px;
+}
+.ai-task-create-global-c .task-item:hover {
+  border-color: var(--accent);
+}
+.ai-task-create-global-c .task-item.focus {
+  border-color: var(--accent);
+  background: rgba(0, 229, 199, 0.08);
+}
+.ai-task-create-global-c .task-item-name {
+  color: var(--text);
+  font-weight: 500;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+.ai-task-create-global-c .task-item-desc {
+  color: var(--text-mute);
+  font-size: 12px;
+}
+.ai-task-create-global-c .tips {
+  color: var(--text-mute);
+  font-size: 12px;
+  margin-top: 6px;
+}
+.ai-task-create-global-c .tips a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.ai-task-create-global-c .tips a:hover {
+  text-decoration: underline;
+}
+.ai-task-create-global-c .list {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ai-task-create-global-c .list .item {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border-2);
+  background: var(--bg-2);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: .2s;
+  font-size: 13px;
+}
+.ai-task-create-global-c .list .item:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.ai-task-create-global-c .list .item.focus {
+  border-color: var(--accent);
+  background: rgba(0, 229, 199, 0.08);
+  color: var(--accent);
+}
+.ai-task-create-global-c .el-input__inner,
+.ai-task-create-global-c .el-textarea__inner {
+  width: 100%;
+  max-width: 400px;
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: var(--text);
+  outline: none;
+  font-family: var(--f-body);
+  font-size: 13px;
+  transition: border-color 0.2s;
+}
+.ai-task-create-global-c .el-textarea__inner {
+  resize: vertical;
+  min-height: 80px;
+}
+.ai-task-create-global-c .el-input__inner:focus,
+.ai-task-create-global-c .el-textarea__inner:focus {
+  border-color: var(--accent);
+}
+.ai-task-create-global-c .el-input__inner[readonly] {
+  background: var(--bg);
+  color: var(--text-mute);
+  cursor: pointer;
+}
+.ai-task-create-global-c .spec-info {
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  padding: 12px;
+  max-width: 500px;
+}
+.ai-task-create-global-c .spec-sel-icon {
+  margin-right: 8px;
+}
+.ai-task-create-global-c .NPU_icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: var(--accent);
+  color: #000;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: bold;
+}
+.ai-task-create-global-c .spec-sel-point {
+  color: var(--accent);
+  font-size: 12px;
+}
+.ai-task-create-global-c .self-point-info {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.ai-task-create-global-c .btn-select,
+.ai-task-create-global-c .model-item-placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--surface-2);
+  border: 1px dashed var(--border-2);
+  border-radius: 6px;
+  color: var(--text);
+  cursor: pointer;
+  transition: .2s;
+  font-size: 13px;
+}
+.ai-task-create-global-c .btn-select:hover,
+.ai-task-create-global-c .model-item-placeholder:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.ai-task-create-global-c .model-item-placeholder i {
+  margin-right: 6px;
+}
+.ai-task-create-global-c .form-right {
+  display: block;
+  width: 320px;
+  flex: none;
+}
+/* Flex layout for form content */
+.ai-task-create-global-c .form-content {
+  display: flex;
+  gap: 40px;
+}
+.ai-task-create-global-c .form-left {
+  flex: 1;
+}
+.ai-task-create-global-c .form-right-content {
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  padding: 16px;
+}
+.ai-task-create-global-c .form-right .title {
+  color: var(--text-dim);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+.ai-task-create-global-c .form-right .code-c {
+  background: var(--bg);
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border-2);
+}
+.ai-task-create-global-c .form-right pre {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  margin: 0;
+  white-space: pre-wrap;
+}
+.ai-task-create-global-c .form-right .copy-btn {
+  text-align: right;
+  margin-top: 8px;
+}
+.ai-task-create-global-c .form-right .copy-btn a {
+  color: var(--accent);
+  font-size: 12px;
+  text-decoration: none;
+}
+.ai-task-create-global-c .line {
+  height: 1px;
+  background: var(--border-2);
+  margin: 30px 0;
+}
+/* Radio buttons */
+.ai-task-create-global-c .el-radio-group {
+  display: flex;
+  gap: 16px;
+  padding-top: 6px;
+}
+.ai-task-create-global-c .el-radio {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 13px;
+}
+.ai-task-create-global-c .el-radio__inner {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--border-2);
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+}
+.ai-task-create-global-c .el-radio.is-checked .el-radio__inner {
+  border-color: var(--accent);
+  background: var(--bg);
+}
+.ai-task-create-global-c .el-radio.is-checked .el-radio__inner::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.ai-task-create-global-c .el-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 13px;
+}
+.ai-task-create-global-c .el-checkbox__inner {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--border-2);
+  border-radius: 3px;
+  display: inline-block;
+  position: relative;
+}
+.ai-task-create-global-c .right-area {
+  padding-left: 10px;
+}
+.ai-task-create-global-c .resource-descr {
+  font-size: 12px;
+  padding-top: 8px;
+}
+.ai-task-create-global-c .resource-descr a {
+  color: var(--accent-3);
+  text-decoration: none;
+}
+.ai-task-create-global-c .wait-count-c {
+  color: var(--accent-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+/* Ensure form wrapper inputs are reset */
+.ai-task-create-global-c .el-input__prefix,
+.ai-task-create-global-c .el-input__suffix {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 8px;
+}
+.ai-task-create-global-c .el-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.ai-task-create-global-c .el-input--prefix .el-input__inner {
+  padding-left: 100px;
+}
+.ai-task-create-global-c .el-input--suffix .el-input__inner {
+  padding-right: 30px;
+}
+.ai-task-create-global-c .el-input__prefix {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.ai-task-create-global-c .el-input__suffix {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+/* Base Dialog Hide */
+.base-dlg, .el-dialog__wrapper, .el-select-dropdown {
+  display: none;
+}
+
+/* Hide some messy elements */
+.el-radio__original, .el-checkbox__original {
+  display: none;
+}
+.ai-task-create-global-c .btn-select .el-icon-plus::before {
+  content: "+ ";
+}
+
+/* Specific overrides for cleaner dark mode UI */
+.hljs-keyword { color: var(--magenta); }
+.hljs-comment { color: var(--text-mute); }
+
+
+.shell {
+  padding-top: var(--nav-h);
+}
+
+</style>
+</head>
+<body>
+
+<!-- ============ TOP NAV ============ -->
+<header class="topnav">
+  <div class="topnav__inner">
+    <a href="/dashboard" class="logo" aria-label="OpenI 启智">
+      <span class="logo__mark">
+        <svg viewBox="0 0 40 40" fill="none">
+          <g class="ring"><circle cx="20" cy="20" r="16" stroke="#00E5C7" stroke-width="1.4" stroke-dasharray="4 6" opacity=".6"></circle></g>
+          <circle cx="20" cy="20" r="9" stroke="#00E5C7" stroke-width="1.6"></circle>
+          <circle cx="20" cy="20" r="3.2" fill="#00E5C7"></circle>
+          <circle cx="20" cy="4.5" r="2" fill="#FFB347"></circle>
+          <circle cx="35.5" cy="20" r="2" fill="#6EA8FF"></circle>
+        </svg>
+      </span>
+      Open<b>I</b> <span class="cn">启智</span>
+    </a>
+    <nav class="navlinks">
+      <a href="/dashboard">我的工作台</a>
+      <a href="/agent">智能体</a>
+      <a href="/modelbase">大模型基地</a>
+      <a href="/explore/datasets">公开资源</a>
+      <a href="/computingpower/demand">普惠算力</a>
+    </nav>
+    <div class="navright">
+      <a href="#" class="iconbtn" aria-label="通知"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"></path></svg><span class="badge">0</span></a>
+      <button class="create-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"></path></svg>创建…</button>
+      <button class="user-btn"><span class="avatar">P</span><span class="uname">PaddySeahorse</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"></path></svg></button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ SHELL ============ -->
+<div class="shell">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="side-brand">工作台 / Workspace</div>
+    <div class="side-group">
+      <div class="side-grp-label">概览</div>
+      <a href="/dashboard" class="side-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg></span>我的工作台</a>
+      <a href="/projects" class="side-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h6l2 3h10v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path></svg></span>项目</a>
+      <a href="/cloudbrains" class="side-item active"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="14" rx="2"></rect><path d="M8 20h8M8 9h8M8 13h5"></path></svg></span>计算任务<span class="cnt">24</span></a>
+      <a href="/ai_task_tmpl" class="side-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M9 9h6M9 13h6M9 17h3"></path></svg></span>计算任务模板<span class="cnt">2</span></a>
+    </div>
+    <div class="side-group">
+      <div class="side-grp-label">资源</div>
+      <a href="/datasets" class="side-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><ellipse cx="12" cy="6" rx="8" ry="3"></ellipse><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"></path></svg></span>数据集</a>
+      <a href="/models" class="side-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2l9 5v10l-9 5-9-5V7z"></path><path d="M12 12l9-5M12 12v10M12 12L3 7"></path></svg></span>模型</a>
+      <a href="/images" class="side-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><path d="M3 17l5-4 4 3 3-2 6 5"></path></svg></span>镜像</a>
+    </div>
+    <div class="side-group">
+      <div class="side-grp-label">组织与配额</div>
+      <a href="/orgs" class="side-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="8" r="3"></circle><path d="M3 20a6 6 0 0112 0M17 11a3 3 0 100-6M16 20a6 6 0 00-3-5.2"></path></svg></span>组织</a>
+      <a href="/resource" class="side-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12l4-4 4 4 4-4 4 4 2-2"></path><path d="M3 18h18M3 6h18"></path></svg></span>资源使用情况</a>
+      <a href="/points" class="side-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg></span>算力积分</a>
+      <a href="/storage" class="side-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><ellipse cx="12" cy="6" rx="9" ry="3"></ellipse><path d="M3 6v12c0 1.7 4 3 9 3s9-1.3 9-3V6"></path></svg></span>存储管理</a>
+    </div>
+    <div class="side-foot">
+      <a href="#">帮助文档</a><a href="#">新手指引</a><a href="#">意见反馈</a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="pagehead">
+      <div class="pagehead__top">
+        <div class="pagehead__title">
+          <div>
+            <div class="breadcrumb"><b>工作台</b> <span>/</span> <a href="/cloudbrains" style="color:inherit;text-decoration:none;">计算任务</a> <span>/</span> 新建计算任务</div>
+            <h1>新建计算任务</h1>
+          </div>
+        </div>
+
+    <div class="create-form-wrap">
+      <div data-v-426e9c7c="" class="ai-task-create-global-c"><div data-v-426e9c7c="" class="create-task-warp"><!----> <div data-v-426e9c7c="" class="area-l-title"><a data-v-426e9c7c="" href="/cloudbrains" class="link label">计算任务</a> <div data-v-426e9c7c="" class="separator"> / </div> <div data-v-426e9c7c="" class="label">新建计算任务</div></div> <div data-v-426e9c7c="" class="create-t-box"><div data-v-426e9c7c="" class="form-container"><div data-v-426e9c7c="" class="form-content"><div data-v-426e9c7c="" class="form-left"><div data-v-426e9c7c="" class="form-body"><!----> <div data-v-543640a4="" data-v-426e9c7c="" class="form-row"><div data-v-543640a4="" class="content "><div data-v-543640a4="" class="task-items-c"><div data-v-543640a4="" class="task-item"><div data-v-543640a4="" class="task-item-name">调试任务</div> <div data-v-543640a4="" title="交互编辑环境" class="task-item-desc nowrap">交互编辑环境</div></div><div data-v-543640a4="" class="task-item focus"><div data-v-543640a4="" class="task-item-name">训练任务</div> <div data-v-543640a4="" title="提交至任务队列" class="task-item-desc nowrap">提交至任务队列</div></div><div data-v-543640a4="" class="task-item"><div data-v-543640a4="" class="task-item-name">在线推理</div> <div data-v-543640a4="" title="搭建实时推理界面" class="task-item-desc nowrap">搭建实时推理界面</div></div><div data-v-543640a4="" class="task-item"><div data-v-543640a4="" class="task-item-name">通用任务</div> <div data-v-543640a4="" title="提供Jupyter调试环境" class="task-item-desc nowrap">提供Jupyter调试环境</div></div><div data-v-543640a4="" class="task-item"><div data-v-543640a4="" class="task-item-name">超算任务</div> <div data-v-543640a4="" title="超算算力计算任务" class="task-item-desc nowrap">超算算力计算任务</div></div></div> <div data-v-543640a4="" class="tips task-item-desc-long"><span data-v-543640a4="">适用于长时间执行，不需要频繁修改算法代码的场景。</span> <span data-v-543640a4="">您的账户可以同时创建1个训练任务。 </span></div></div></div> <!----> <div data-v-426e9c7c="" class="form-body-content"><div data-v-426e9c7c="" class="main-title">基本信息：</div> <div data-v-3ade9c5b="" data-v-426e9c7c=""><!----> <div data-v-3ade9c5b="" class="form-row form-row-computer-resource"><div data-v-3ade9c5b="" class="left-area"><div data-v-3ade9c5b="" class="title"><span data-v-3ade9c5b="" class="required">计算资源</span></div> <div data-v-3ade9c5b="" class="content"><div data-v-3ade9c5b="" class="list"><a data-v-3ade9c5b="" class="item"><span data-v-3ade9c5b="">英伟达GPU</span></a><a data-v-3ade9c5b="" class="item focus"><span data-v-3ade9c5b="">昇腾NPU</span></a><a data-v-3ade9c5b="" class="item"><span data-v-3ade9c5b="">燧原GCU</span></a><a data-v-3ade9c5b="" class="item"><span data-v-3ade9c5b="">海光DCU</span></a><a data-v-3ade9c5b="" class="item"><span data-v-3ade9c5b="">天数智芯GPGPU</span></a><a data-v-3ade9c5b="" class="item"><span data-v-3ade9c5b="">沐曦GPGPU</span></a><a data-v-3ade9c5b="" class="item"><span data-v-3ade9c5b="">壁仞GPU</span></a></div></div></div></div> <div data-v-3ade9c5b="" class="form-row tips-c"><div data-v-3ade9c5b="" class="left-area"><div data-v-3ade9c5b="" class="title"></div> <div data-v-3ade9c5b="" class="content"><div data-v-3ade9c5b="" class="tips tips-1"><span data-v-3ade9c5b="" class="wait-count-c"><i data-v-3ade9c5b="" class="ri-error-warning-line"></i> <span data-v-3ade9c5b="">
+              您当前排队位置是第
+              <span data-v-3ade9c5b="">1</span>
+              位
+            </span></span> <!----></div></div></div></div></div> <div data-v-0bf86512="" data-v-426e9c7c="" class="form-row"><div data-v-0bf86512="" class="left-area"><div data-v-0bf86512="" class="title align-items-center"><span data-v-0bf86512="" class="required">访问Internet</span></div> <div data-v-0bf86512="" class="content"><div data-v-0bf86512="" role="radiogroup" class="el-radio-group"><label data-v-0bf86512="" role="radio" tabindex="-1" class="el-radio"><span class="el-radio__input"><span class="el-radio__inner"></span><input type="radio" aria-hidden="true" tabindex="-1" class="el-radio__original" value="no_internet"></span><span class="el-radio__label">否<!----></span></label> <label data-v-0bf86512="" role="radio" aria-checked="true" tabindex="0" class="el-radio is-checked"><span class="el-radio__input is-checked"><span class="el-radio__inner"></span><input type="radio" aria-hidden="true" tabindex="-1" class="el-radio__original" value="has_internet"></span><span class="el-radio__label">是<!----></span></label></div> <i data-v-0bf86512="" class="el-tooltip question circle icon link tooltip" style="margin-top: -7px;" aria-describedby="el-tooltip-2614" tabindex="0"></i></div></div> <div data-v-0bf86512="" class="right-area"></div></div> <div data-v-9371aaf6="" data-v-426e9c7c="" class="form-row"><div data-v-9371aaf6="" class="left-area"><div data-v-9371aaf6="" class="title align-items-center"><span data-v-9371aaf6="" class="">可视化</span></div> <div data-v-9371aaf6="" class="content"><label data-v-9371aaf6="" class="el-checkbox"><span class="el-checkbox__input"><span class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false" class="el-checkbox__original" value=""></span><span class="el-checkbox__label">查看TensorBoard可视化结果<!----></span></label></div></div> <div data-v-9371aaf6="" class="right-area"></div></div> <div data-v-2c735a62="" data-v-426e9c7c="" class="form-row"><div data-v-2c735a62="" class="left-area"><div data-v-2c735a62="" class="title"><span data-v-2c735a62="" class="required">资源规格</span></div> <div data-v-2c735a62="" class="content"><div data-v-2c735a62="" class="spec-info"><div data-v-2c735a62="" class="el-select spec-sel field-input el-select--small spec-show-point"><!----><div class="el-input el-input--small el-input--prefix el-input--suffix"><!----><input type="text" readonly="readonly" autocomplete="off" placeholder="请选择资源规格" class="el-input__inner"><span class="el-input__prefix"><div data-v-2c735a62="" class="spec-sel-icon spec-op-icon"><div data-v-2c735a62="" class="NPU_icon _icon">N</div></div><div data-v-2c735a62="" class="spec-sel-point"> 8.00积分/时 </div><!----></span><span class="el-input__suffix"><span class="el-input__suffix-inner"><i class="el-select__caret el-input__icon el-icon-arrow-up"></i><!----><!----><!----><!----><!----></span><!----></span><!----><!----></div><div class="el-select-dropdown el-popper" style="display: none; min-width: 568px;"><div class="el-scrollbar" style=""><div class="el-select-dropdown__wrap el-scrollbar__wrap" style="margin-bottom: -10px; margin-right: -10px;"><ul class="el-scrollbar__view el-select-dropdown__list"><!----> <li data-v-2c735a62="" class="el-select-dropdown__item selected"><span data-v-2c735a62="" class="spec-op-icon" style="float: left;"><div data-v-2c735a62="" class="NPU_icon _icon">N</div></span> <span data-v-2c735a62="" class="spec-op-spec" style="float: left;">NPU: 1*Ascend 910C(显存: 32GB), CPU: 80, 内存: 256GB</span> <span data-v-2c735a62="" class="spec-op-point" style="float: right;">8.00积分/时</span></li><li data-v-2c735a62="" class="el-select-dropdown__item"><span data-v-2c735a62="" class="spec-op-icon" style="float: left;"><div data-v-2c735a62="" class="NPU_icon _icon">N</div></span> <span data-v-2c735a62="" class="spec-op-spec" style="float: left;">NPU: 1*Ascend 910B(显存: 64GB), CPU: 24, 内存: 192GB</span> <span data-v-2c735a62="" class="spec-op-point" style="float: right;">4.00积分/时</span></li><li data-v-2c735a62="" class="el-select-dropdown__item"><span data-v-2c735a62="" class="spec-op-icon" style="float: left;"><div data-v-2c735a62="" class="NPU_icon _icon">N</div></span> <span data-v-2c735a62="" class="spec-op-spec" style="float: left;">NPU: 1*Ascend 910(显存: 32GB), CPU: 24, 内存: 96GB</span> <span data-v-2c735a62="" class="spec-op-point" style="float: right;">2.00积分/时</span></li><li data-v-2c735a62="" class="el-select-dropdown__item"><span data-v-2c735a62="" class="spec-op-icon" style="float: left;"><div data-v-2c735a62="" class="NPU_icon _icon">N</div></span> <span data-v-2c735a62="" class="spec-op-spec" style="float: left;">NPU: 2*Ascend 910(显存: 32GB), CPU: 48, 内存: 128GB</span> <span data-v-2c735a62="" class="spec-op-point" style="float: right;">4.00积分/时</span></li><li data-v-2c735a62="" class="el-select-dropdown__item"><span data-v-2c735a62="" class="spec-op-icon" style="float: left;"><div data-v-2c735a62="" class="NPU_icon _icon">N</div></span> <span data-v-2c735a62="" class="spec-op-spec" style="float: left;">NPU: 4*Ascend 910(显存: 32GB), CPU: 96, 内存: 256GB</span> <span data-v-2c735a62="" class="spec-op-point" style="float: right;">8.00积分/时</span></li> </ul></div><div class="el-scrollbar__bar is-horizontal"><div class="el-scrollbar__thumb" style="transform: translateX(0%);"></div></div><div class="el-scrollbar__bar is-vertical"><div class="el-scrollbar__thumb" style="transform: translateY(0%);"></div></div></div><!----></div></div> <div data-v-2c735a62="" class="self-point-info" style=""><span data-v-2c735a62="">积分余额：<span data-v-2c735a62="" style="color: red;"> 977.20</span>
+            积分<span data-v-2c735a62="">，预计可用 <span data-v-2c735a62="" style="color: red;">122.15</span> 小时</span></span> <span data-v-2c735a62=""><i data-v-2c735a62="" class="el-icon-question"></i> <a data-v-2c735a62="" target="_blank" href="/reward/point/rule">积分获取说明</a></span></div> <!----></div></div></div> <div data-v-2c735a62="" class="right-area resource-descr-c"><div data-v-2c735a62="" class="resource-descr"><i data-v-2c735a62="" class="el-tooltip question circle icon link" style="margin-top: -7px;" aria-describedby="el-tooltip-6604" tabindex="0"></i> <a data-v-2c735a62="" target="_blank" href="https://openi.pcl.ac.cn/docs/index.html#/quickstart/resources">资源说明</a></div></div></div> <!----> <div data-v-7ad6b900="" data-v-426e9c7c="" class="form-row"><div data-v-7ad6b900="" class="left-area"><div data-v-7ad6b900="" class="title"><span data-v-7ad6b900="" class="required">任务名称</span></div> <div data-v-7ad6b900="" class="content"><div data-v-7ad6b900="" class="field-input el-input el-input--small"><!----><input type="text" autocomplete="off" maxlength="36" placeholder="任务名称" autofocus="autofocus" class="el-input__inner"><!----><!----><!----><!----></div> <div data-v-7ad6b900="" class="tips">只能以小写字母或数字开头且只包含小写字母、数字、_和-，不能以_结尾，最长36个字符。</div></div></div> <div data-v-7ad6b900="" class="right-area"></div></div> <div data-v-d5b3dbf8="" data-v-426e9c7c="" class="form-row"><div data-v-d5b3dbf8="" class="left-area"><div data-v-d5b3dbf8="" class="title"><span data-v-d5b3dbf8="" class="">任务描述</span></div> <div data-v-d5b3dbf8="" class="content"><div data-v-d5b3dbf8="" class="field-input el-textarea el-input--small"><textarea autocomplete="off" rows="3" placeholder="描述字数不超过255个字符" maxlength="255" class="el-textarea__inner" style="min-height: 40px;"></textarea><!----></div></div></div> <div data-v-d5b3dbf8="" class="right-area"></div></div></div> <div data-v-426e9c7c="" class="line"></div> <div data-v-426e9c7c="" class="form-body-content"><div data-v-426e9c7c="" class="main-title params-setting">参数设置：</div> <div data-v-dadb6d06="" data-v-426e9c7c="" class="form-row"><div data-v-dadb6d06="" class="left-area"><div data-v-dadb6d06="" class="title"><span data-v-dadb6d06="" class="required">镜像</span></div> <div data-v-dadb6d06="" class="content"><div data-v-dadb6d06="" class="field-input el-input el-input--small"><!----><input type="text" readonly="readonly" autocomplete="off" placeholder="选择镜像" class="el-input__inner"><!----><!----><!----><!----></div> <!----> <!----> <!----></div></div> <div data-v-dadb6d06="" class="right-area"><div data-v-dadb6d06="" class="btn-select"><i data-v-dadb6d06="" class="el-icon-plus"></i> <span data-v-dadb6d06="">选择镜像</span></div></div> <div data-v-dadb6d06="" class="el-dialog__wrapper model-dlg" style="display: none;"><div role="dialog" aria-modal="true" aria-label="dialog" class="el-dialog" style="margin-top: 15vh; width: 1000px;"><div class="el-dialog__header"><span class="el-dialog__title"></span><button type="button" aria-label="Close" class="el-dialog__headerbtn"><i class="el-dialog__close el-icon el-icon-close"></i></button></div><!----><!----></div></div></div> <div data-v-d9c7090c="" data-v-426e9c7c="" class="form-row"><div data-v-d9c7090c="" class="left-area"><div data-v-d9c7090c="" class="title"><span data-v-d9c7090c="" class="required"> 数据集</span></div> <div data-v-d9c7090c="" class="content"><div data-v-d9c7090c="" class="model-list-c"> <div data-v-d9c7090c="" class="model-item-placeholder">
+          选择数据集
+        </div></div></div></div> <div data-v-d9c7090c="" class="right-area"><div data-v-d9c7090c="" class="btn-select"><i data-v-d9c7090c="" class="el-icon-plus"></i> <span data-v-d9c7090c="">选择数据集</span></div></div> <div data-v-d9c7090c="" class="el-dialog__wrapper model-dlg" style="display: none;"><div role="dialog" aria-modal="true" aria-label="dialog" class="el-dialog" style="margin-top: 15vh; width: 1100px;"><div class="el-dialog__header"><span class="el-dialog__title"></span><button type="button" aria-label="Close" class="el-dialog__headerbtn"><i class="el-dialog__close el-icon el-icon-close"></i></button></div><!----><!----></div></div></div> <div data-v-33c5357e="" data-v-426e9c7c="" class="form-row"><div data-v-33c5357e="" class="left-area"><div data-v-33c5357e="" class="title"><span data-v-33c5357e="" class=""> 模型</span></div> <div data-v-33c5357e="" class="content"><div data-v-33c5357e="" class="model-list-c"> <div data-v-33c5357e="" class="model-item-placeholder">
+          选择模型
+        </div></div></div></div> <div data-v-33c5357e="" class="right-area"><div data-v-33c5357e="" class="btn-select"><i data-v-33c5357e="" class="el-icon-plus"></i> <span data-v-33c5357e="">选择模型</span></div></div> <div data-v-33c5357e="" class="el-dialog__wrapper model-dlg" style="display: none;"><div role="dialog" aria-modal="true" aria-label="dialog" class="el-dialog" style="margin-top: 15vh; width: 1100px;"><div class="el-dialog__header"><span class="el-dialog__title"></span><button type="button" aria-label="Close" class="el-dialog__headerbtn"><i class="el-dialog__close el-icon el-icon-close"></i></button></div><!----><!----></div></div></div> <div data-v-1f31cc88="" data-v-426e9c7c="" class="form-row"><div data-v-1f31cc88="" class="left-area"><div data-v-1f31cc88="" class="title"><span data-v-1f31cc88="" class="required"> 项目</span></div> <div data-v-1f31cc88="" class="content"><div data-v-1f31cc88="" class="model-list-c"> <div data-v-1f31cc88="" class="model-item-placeholder">
+          选择项目
+        </div></div> <div data-v-1f31cc88="" class="tips">计算任务容器内项目存储配额为 50 GiB，请控制项目大小。</div></div></div> <div data-v-1f31cc88="" class="right-area" style="align-items: flex-start;"><div data-v-1f31cc88="" class="btn-select" style="height: 37.6px;"><i data-v-1f31cc88="" class="el-icon-plus"></i> <span data-v-1f31cc88="">选择项目</span></div></div> <div data-v-1f31cc88="" class="el-dialog__wrapper model-dlg" style="display: none;"><div role="dialog" aria-modal="true" aria-label="dialog" class="el-dialog" style="margin-top: 15vh; width: 1100px;"><div class="el-dialog__header"><span class="el-dialog__title"></span><button type="button" aria-label="Close" class="el-dialog__headerbtn"><i class="el-dialog__close el-icon el-icon-close"></i></button></div><!----><!----></div></div></div> <div data-v-0e568022="" data-v-426e9c7c="" class="form-row"><div data-v-0e568022="" class="left-area"><div data-v-0e568022="" class="title"><span data-v-0e568022="" class="required">代码分支</span></div> <div data-v-0e568022="" class="content"><div data-v-0e568022="" class="el-select field-input el-select--small"><!----><div class="el-input el-input--small el-input--suffix"><!----><input type="text" readonly="readonly" autocomplete="off" placeholder="请选择" class="el-input__inner"><!----><span class="el-input__suffix"><span class="el-input__suffix-inner"><i class="el-select__caret el-input__icon el-icon-arrow-up"></i><!----><!----><!----><!----><!----></span><!----></span><!----><!----></div><div class="el-select-dropdown el-popper" style="display: none; min-width: 568px;"><div class="el-scrollbar" style="display: none;"><div class="el-select-dropdown__wrap el-scrollbar__wrap" style="margin-bottom: -10px; margin-right: -10px;"><ul class="el-scrollbar__view el-select-dropdown__list"></ul></div><div class="el-scrollbar__bar is-horizontal"><div class="el-scrollbar__thumb" style="transform: translateX(0%);"></div></div><div class="el-scrollbar__bar is-vertical"><div class="el-scrollbar__thumb" style="transform: translateY(0%);"></div></div></div><p class="el-select-dropdown__empty">
+          无数据
+        </p></div></div> <!----></div></div> <div data-v-0e568022="" class="right-area"></div></div> <div data-v-95bfc430="" data-v-426e9c7c="" class="form-row"><div data-v-95bfc430="" class="left-area"><div data-v-95bfc430="" class="title align-items-center"><span data-v-95bfc430="" class="required">启动文件</span></div> <div data-v-95bfc430="" class="content"><div data-v-95bfc430="" class="field-input el-input el-input--small"><!----><input type="text" autocomplete="off" placeholder="请输入启动文件" class="el-input__inner"><!----><!----><!----><!----></div></div></div> <div data-v-95bfc430="" class="right-area"><div data-v-95bfc430="" class="btn-select"><i data-v-95bfc430="" class="el-tooltip question circle icon link" style="margin-top: -7px;" aria-describedby="el-tooltip-1286" tabindex="0"></i> <a data-v-95bfc430="" href="https://openi.pcl.ac.cn/OpenIOSSG/OpenI_Cloudbrain_Example/src/branch/master/npu_mnist_example/train.py" target="_blank" style="color: rgb(0, 102, 255);">查看样例</a></div></div></div> <div data-v-335c4f1e="" data-v-426e9c7c="" class="form-row"><div data-v-335c4f1e="" class="left-area"><div data-v-335c4f1e="" class="title"><span data-v-335c4f1e="" class="">运行参数</span></div> <div data-v-335c4f1e="" class="content"><div data-v-335c4f1e="" class="param-list field-input"></div> <div data-v-335c4f1e="" class="add-param-btn"><a data-v-335c4f1e="" href="javascript:;"><i data-v-335c4f1e="" class="plus square outline icon"></i> <span data-v-335c4f1e="">新增运行参数</span></a></div></div></div> <div data-v-335c4f1e="" class="right-area"></div></div> <!----> <!----> <div data-v-13ad723a="" data-v-426e9c7c="" class="forbid-penetration-check-container"><span data-v-13ad723a=""><div role="tooltip" id="el-popover-9584" aria-hidden="true" class="el-popover el-popper penalty-tip-popover" style="display: none;" tabindex="0"><!----><div data-v-13ad723a="" class="penalty-tip-content">本平台严禁任何形式的<span class="highlight">穿透行为</span>。违规者将被扣除算力积分、限制登录，严重者将承担<span class="highlight">法律责任</span>！</div> </div><span class="el-popover__reference-wrapper"><label data-v-13ad723a="" class="el-checkbox is-checked el-popover__reference" aria-describedby="el-popover-9584" tabindex="0"><span class="el-checkbox__input is-checked"><span class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false" class="el-checkbox__original" value=""></span><span class="el-checkbox__label"><span data-v-13ad723a="" class="checkbox-label">禁止任何形式的穿透行为声明</span><!----></span></label></span></span></div> <div data-v-426e9c7c="" class="form-row"><div data-v-426e9c7c="" class="left-area"><div data-v-426e9c7c="" class="title"></div> <div data-v-426e9c7c="" class="content"><button data-v-426e9c7c="" type="button" class="el-button submit-btn el-button--primary el-button--default"><!----><!----><span>
+                        新建任务
+                      </span></button> <button data-v-426e9c7c="" type="button" class="el-button cancel-btn el-button--default el-button--default"><!----><!----><span>取消</span></button></div></div></div> <div data-v-426e9c7c="" class="form-row" style="display: flex; justify-content: center; margin-top: 45px; margin-bottom: -10px;"><div data-v-46fb5db6="" data-v-426e9c7c="" class="ack-tips-c"><div data-v-46fb5db6="" class="icon-c"><svg data-v-46fb5db6="" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1072 1024" width="60" height="60" class="styles__StyledSVGIconPathComponent-sc-4n1c4t-0 kmDyzV svg-icon-path-icon"><defs data-v-46fb5db6=""></defs> <g data-v-46fb5db6=""><path data-v-46fb5db6="" d="M667.989333 247.466667h-31.719619c-7.460571 0-13.06819-3.705905-13.06819-11.166477 0-7.43619 5.607619-11.166476 13.06819-11.166476h31.719619V193.487238c0-7.43619 5.607619-13.019429 13.068191-13.019428 7.460571 0 13.06819 5.583238 13.06819 13.019428v31.646476h27.989334c7.460571 0 13.06819 3.730286 13.06819 11.166476 0 7.460571-5.607619 11.166476-13.06819 11.166477H694.125714v27.940571c0 7.43619-5.607619 13.019429-13.06819 13.019429a12.726857 12.726857 0 0 1-13.068191-13.019429V247.466667z" fill="#6DD400" p-id="6404"></path> <path data-v-46fb5db6="" d="M821.248 50.273524V5.583238c0-1.852952 3.730286-5.583238 9.337905-5.583238s9.337905 3.730286 9.337905 5.607619v42.788571c0 3.730286-3.730286 7.460571-9.337905 7.460572s-9.337905-3.730286-9.337905-5.607619z" fill="#FA6400" p-id="6405"></path> <path data-v-46fb5db6="" d="M852.992 37.229714h-42.934857c-3.730286 0-7.460571-3.730286-7.460572-9.313524s3.730286-9.289143 5.607619-9.289142h42.910477c3.730286 0 7.460571 3.705905 7.460571 9.289142 0 5.607619-3.730286 9.313524-5.607619 9.313524z" fill="#FA6400" p-id="6406"></path> <path data-v-46fb5db6="" d="M953.782857 567.905524l-16.822857-16.749714c-5.607619-5.583238-5.607619-13.019429 0-18.602667a14.677333 14.677333 0 0 1 20.528762 0l16.822857 16.749714 16.774095-16.749714a14.677333 14.677333 0 0 1 20.528762 0c5.607619 5.583238 5.607619 13.019429 0 18.602667l-16.798476 16.749714 16.822857 16.774095c5.583238 5.583238 5.583238 13.019429 0 18.602667-3.754667 1.852952-5.607619 3.730286-9.362286 3.730285a14.262857 14.262857 0 0 1-9.313523-3.730285l-16.822858-16.749715-16.774095 16.749715a14.287238 14.287238 0 0 1-9.337905 3.730285 14.262857 14.262857 0 0 1-9.337904-3.730285c-5.607619-5.607619-5.607619-13.019429 0-18.627048l13.06819-16.749714zM174.445714 365.007238l-31.695238-29.769143c-1.877333-3.730286-1.877333-7.460571 0-9.313524 3.705905-3.730286 7.43619-3.730286 9.313524 0l31.719619 31.646477c1.877333 1.852952 1.877333 7.43619 0 9.313523-1.852952 1.852952-5.607619 1.852952-9.337905-1.877333z" fill="#F7B500" p-id="6407"></path> <path data-v-46fb5db6="" d="M183.832381 335.238095L152.064 364.982857c-1.877333 1.877333-7.460571 1.877333-9.337905 0-1.877333-1.852952-1.877333-5.583238 0-9.313524l31.719619-31.622095c3.730286-1.877333 7.484952-1.877333 9.337905 1.852952 3.730286 1.852952 3.730286 5.583238 0 9.313524zM348.208762 221.549714c-26.136381 0-46.665143-20.48-46.665143-44.665904 0-26.087619 20.528762-46.567619 46.665143-46.56762s46.665143 20.48 46.665143 44.690286a46.153143 46.153143 0 0 1-46.665143 46.543238z m0-65.145904c-11.215238 0-18.67581 7.43619-18.67581 18.602666s7.484952 18.627048 18.67581 18.627048c11.215238 0 18.651429-7.460571 18.651428-18.627048s-7.460571-18.602667-18.651428-18.602666z" fill="#F7B500" p-id="6408"></path> <path data-v-46fb5db6="" d="M763.928381 982.528c0 22.113524-96.743619 40.106667-216.064 40.106667-119.344762 0-216.161524-17.92-216.161524-40.106667 0-22.113524 96.743619-40.106667 216.161524-40.106667 119.320381 0 216.039619 17.993143 216.039619 40.106667z" fill="#e6e6e6" p-id="6409" data-spm-anchor-id="a313x.search_index.0.i2.399d3a81HlCAyy" class="selected-ilysg2xf064v02p-UIxb7NtTX3AVjZ"></path> <path data-v-46fb5db6="" d="M60.318476 591.530667a15.11619 15.11619 0 0 0 15.067429-15.043048 15.018667 15.018667 0 0 0-15.067429-15.043048H15.067429A15.11619 15.11619 0 0 1 0 546.401524a15.018667 15.018667 0 0 1 15.067429-15.043048h150.79619a15.11619 15.11619 0 0 1 15.067429 15.043048 15.018667 15.018667 0 0 1-15.067429 15.043047H135.704381a15.11619 15.11619 0 0 0-15.09181 15.043048 15.018667 15.018667 0 0 0 15.09181 15.043048h60.294095a15.11619 15.11619 0 0 1 15.09181 15.043047 15.018667 15.018667 0 0 1-15.09181 15.018667H45.226667a15.11619 15.11619 0 0 1-15.067429-15.018667 15.018667 15.018667 0 0 1 15.067429-15.043047h15.091809zM888.07619 364.446476a18.480762 18.480762 0 0 0 18.456381-18.432 18.407619 18.407619 0 0 0-18.480761-18.407619h-55.393524a18.505143 18.505143 0 0 1-18.480762-18.432 18.407619 18.407619 0 0 1 18.480762-18.432h184.685714a18.505143 18.505143 0 0 1 18.480762 18.432 18.407619 18.407619 0 0 1-18.480762 18.432h-36.937143a18.480762 18.480762 0 0 0-18.456381 18.407619 18.407619 18.407619 0 0 0 18.456381 18.432h73.874286a18.480762 18.480762 0 0 1 18.480762 18.407619 18.407619 18.407619 0 0 1-18.480762 18.432h-184.685714a18.505143 18.505143 0 0 1-18.480762-18.432 18.407619 18.407619 0 0 1 18.480762-18.407619h18.480761zM774.656 469.528381c1.219048 1.950476 2.413714 3.82781 3.584 5.753905-1.170286-1.877333-2.438095-3.803429-3.608381-5.753905zM462.531048 859.062857c-0.950857-0.341333-1.877333-0.707048-2.779429-0.975238l2.779429 0.975238z m7.94819 2.779429a72.94781 72.94781 0 0 1-3.291428-1.121524c1.121524 0.341333 2.194286 0.75581 3.291428 1.121524z m-4.291048-1.462857c-0.902095-0.316952-1.77981-0.609524-2.608761-0.975239 0.902095 0.365714 1.77981 0.658286 2.608761 0.975239z m-15.018666-5.729524z m306.712381-408.210286c1.414095 1.77981 2.82819 3.535238 4.242285 5.36381l-4.242285-5.36381zM459.093333 857.770667l-3.535238-1.340953c1.194667 0.487619 2.364952 0.926476 3.535238 1.340953z m-3.754666-1.462857c-1.072762-0.414476-2.121143-0.877714-3.242667-1.292191 1.048381 0.487619 2.121143 0.877714 3.242667 1.292191z m34.742857 11.044571c-1.219048-0.292571-2.486857-0.585143-3.657143-0.950857 1.243429 0.365714 2.438095 0.658286 3.657143 0.950857z m-42.422857-14.214095l-2.80381-1.219048c0.926476 0.463238 1.877333 0.853333 2.828191 1.219048z m353.816381-328.899048c0.341333 1.048381 0.75581 2.096762 1.121523 3.169524a62.244571 62.244571 0 0 1-1.121523-3.169524z m-1.243429-3.364571c0.414476 1.048381 0.75581 2.194286 1.170286 3.242666-0.341333-1.072762-0.75581-2.121143-1.170286-3.242666zM474.38019 863.061333c-1.219048-0.341333-2.413714-0.75581-3.584-1.121523l3.584 1.121523z m7.314286 2.121143z m308.614095-367.640381c0.487619 0.999619 0.950857 2.072381 1.462858 3.072-0.463238-1.072762-0.975238-2.072381-1.462858-3.072zM493.763048 868.230095c-0.877714-0.24381-1.828571-0.414476-2.681905-0.633905 0.853333 0.24381 1.755429 0.414476 2.681905 0.633905z m-135.996953-78.994285z m58.197334 47.616a60.952381 60.952381 0 0 1-3.291429-2.048c1.048381 0.731429 2.194286 1.365333 3.291429 2.048z m-75.922286-69.12c-0.707048-0.950857-1.340952-1.901714-2.048-2.828191 0.633905 0.926476 1.340952 1.877333 2.048 2.80381z m72.508952 67.023238l-3.072-1.950477 3.072 1.950477z m9.898667 5.924571l-2.608762-1.462857c0.902095 0.487619 1.77981 0.926476 2.608762 1.462857zM349.817905 780.190476l-2.218667-2.633143c0.731429 0.877714 1.511619 1.755429 2.218667 2.633143z m46.006857 43.25181c-0.828952-0.658286-1.706667-1.219048-2.535619-1.877334 0.877714 0.633905 1.706667 1.219048 2.535619 1.877334z m-3.072-2.29181z m12.921905 9.216a87.064381 87.064381 0 0 1-2.950096-1.999238c0.975238 0.658286 1.999238 1.29219 2.925715 1.999238z m-25.234286-19.139047z m56.149333 36.888381c-0.902095-0.414476-1.706667-0.877714-2.608762-1.292191 0.828952 0.414476 1.706667 0.877714 2.608762 1.292191z m7.655619 3.584l-3.486476-1.584762 3.486476 1.584762z m-14.384762-6.997334c-1.121524-0.585143-2.29181-1.170286-3.413333-1.828571l3.413333 1.828571z m-3.535238-1.877333l-3.120762-1.706667 3.120762 1.706667z m6.826667 3.584c-0.926476-0.487619-1.877333-0.999619-2.876952-1.462857 0.950857 0.463238 1.877333 0.975238 2.901333 1.462857z m68.022857-28.038095c145.724952 0 263.875048-117.833143 263.875048-263.168a261.607619 261.607619 0 0 0-44.714667-146.627048l2.608762 2.194286a263.143619 263.143619 0 0 0-170.520381-62.342096c-145.700571 0-263.850667 117.833143-263.850667 263.168 0 57.10019 18.261333 109.909333 49.176381 153.112381-1.536-2.145524-2.998857-4.315429-4.486095-6.41219a263.43619 263.43619 0 0 0 167.936 60.099048z m162.084572-334.604191c26.209524 0 47.469714 21.211429 47.469714 47.34781a47.420952 47.420952 0 0 1-47.469714 47.347809 47.420952 47.420952 0 0 1-47.469715-47.347809c0-26.136381 21.26019-47.34781 47.469715-47.34781z m7.899428 136.874667c11.605333 0 20.041143 9.99619 18.505143 21.040762a137.508571 137.508571 0 0 1-59.855238 92.525714l-0.048762 0.048762a28.281905 28.281905 0 0 1-1.755429 1.121524l-1.950476 1.219047c-18.773333 11.702857-40.521143 18.919619-63.853714 20.504381h-0.121905l-2.876952 0.195048h-0.341334c-0.902095 0.048762-1.828571 0.048762-2.730666 0.121905h-0.463238l-3.169524 0.048762c-1.072762 0-2.121143 0-3.169524-0.073143h-0.560762a41.935238 41.935238 0 0 1-2.681905-0.097524h-0.438857l-2.82819-0.195048h-0.097524a137.752381 137.752381 0 0 1-63.804952-20.48c-0.048762-0.073143-0.097524-0.073143-0.170667-0.121904-0.585143-0.365714-1.170286-0.78019-1.828571-1.121524a137.679238 137.679238 0 0 1-59.416381-82.651429h-0.121905a78.409143 78.409143 0 0 1-2.121143-10.971428v-0.146286a18.383238 18.383238 0 0 1 18.505143-21.016381h237.397333v0.048762z m-229.522286-136.874667c26.209524 0 47.469714 21.211429 47.469715 47.34781a47.420952 47.420952 0 0 1-47.469715 47.347809 47.420952 47.420952 0 0 1-47.469714-47.347809c0-26.136381 21.211429-47.34781 47.469714-47.34781z m84.821334 389.729524l-2.706286-0.316952c0.877714 0.121905 1.755429 0.24381 2.681905 0.316952z m287.695238-295.619048c0.195048 1.170286 0.316952 2.340571 0.414476 3.535238-0.097524-1.194667-0.292571-2.364952-0.414476-3.535238z m0.414476 3.584l0.365714 3.462096c-0.073143-1.170286-0.24381-2.340571-0.365714-3.462096zM530.456381 873.862095c-0.877714-0.048762-1.755429-0.170667-2.657524-0.243809l2.681905 0.243809z m-7.899429-0.731428a71.119238 71.119238 0 0 1-3.754666-0.487619c1.219048 0.170667 2.535619 0.292571 3.754666 0.487619z m-3.998476-0.560762l-3.535238-0.463238c1.194667 0.170667 2.364952 0.365714 3.535238 0.487619z m28.745143 2.121143l-2.706286-0.048762 2.706286 0.048762z m-4.071619-0.121905c-0.877714-0.048762-1.828571-0.048762-2.681905-0.121905 0.853333 0.073143 1.80419 0.121905 2.681905 0.121905z m-140.580571-46.32381c-1.048381-0.78019-2.194286-1.487238-3.242667-2.243047 1.072762 0.75581 2.121143 1.511619 3.242667 2.218666z m-41.935239-35.84z m174.640762 81.822477c-1.243429-0.048762-2.486857-0.170667-3.705904-0.24381 1.219048 0.073143 2.438095 0.121905 3.705904 0.24381z m3.998477 0.243809c-1.29219-0.073143-2.584381-0.121905-3.82781-0.243809 1.219048 0.048762 2.535619 0.121905 3.82781 0.243809z m270.214095-322.291809c0.24381 1.121524 0.536381 2.243048 0.755809 3.364571-0.292571-1.121524-0.512-2.243048-0.755809-3.364571zM506.148571 870.692571l-3.730285-0.707047c1.243429 0.316952 2.486857 0.487619 3.705904 0.731428z m3.754667 0.658286a43.398095 43.398095 0 0 1-2.706286-0.487619c0.950857 0.195048 1.828571 0.365714 2.706286 0.487619z" fill="#FFD73A" p-id="6410"></path> <path data-v-46fb5db6="" d="M769.462857 761.319619c-1.828571 2.584381-3.657143 5.168762-5.534476 7.704381 1.877333-2.535619 3.705905-5.071238 5.534476-7.704381z m-7.484952 10.24c-1.29219 1.633524-2.584381 3.31581-3.949715 4.973714 1.365333-1.657905 2.657524-3.291429 3.949715-4.998095z m-56.783238 54.613333c-1.706667 1.219048-3.462095 2.413714-5.241905 3.584 1.77981-1.121524 3.486476-2.340571 5.241905-3.584z m7.655619-5.632z m19.334095-16.286476z m-9.508571 8.411429c-1.560381 1.340952-3.218286 2.681905-4.876191 3.998476 1.657905-1.365333 3.31581-2.657524 4.876191-3.998476z m29.305904-28.842667z m21.016381-27.721143l-3.535238 5.217524 3.535238-5.217524z m11.459048-19.114666z m30.47619-98.499048z m-2.779428 19.675429z m4.144762-43.178667c0 2.29181-0.073143 4.534857-0.195048 6.753524 0.121905-2.218667 0.121905-4.534857 0.170667-6.753524z m-2.56 33.401905c-0.292571 2.194286-0.633905 4.388571-0.975238 6.534095 0.341333-2.169905 0.682667-4.33981 0.975238-6.509714z m-33.962667 96.938666c-1.072762 1.828571-2.194286 3.657143-3.31581 5.412572 1.072762-1.828571 2.194286-3.584 3.31581-5.412572z m-79.823238 84.48z m94.354286-112.835047l-2.633143 5.802666 2.633143-5.802666z m-116.077715 126.000762l-5.656381 2.998857c1.877333-0.999619 3.779048-1.950476 5.656381-2.998857z m-17.188571 8.533333z" fill="#FEC43C" p-id="6411"></path> <path data-v-46fb5db6="" d="M816.274286 607.939048v-1.170286l-0.048762-2.438095c0-0.438857 0-0.926476-0.048762-1.389715 0-0.75581-0.073143-1.462857-0.073143-2.243047l-0.048762-1.462857c-0.073143-0.707048-0.073143-1.414095-0.121905-2.121143l-0.048762-1.462857c-0.073143-0.707048-0.121905-1.414095-0.121904-2.121143-0.073143-0.463238-0.073143-0.975238-0.121905-1.462857l-0.170667-2.169905c-0.073143-0.487619-0.073143-0.926476-0.121904-1.414095a33.401905 33.401905 0 0 0-0.24381-2.413715c-0.048762-0.390095-0.048762-0.731429-0.121905-1.170285l-0.341333-3.462096v-0.048762l-0.414476-3.535238-0.170667-1.121523a32.402286 32.402286 0 0 1-0.316952-2.340572l-0.170667-1.340952a137.142857 137.142857 0 0 1-0.341333-2.194286c-0.073143-0.463238-0.195048-0.926476-0.24381-1.389714a146.090667 146.090667 0 0 0-0.341333-2.072381c-0.073143-0.463238-0.195048-0.926476-0.24381-1.414095l-0.341333-2.048c-0.073143-0.487619-0.195048-0.926476-0.24381-1.414096l-0.414476-2.121143c-0.048762-0.463238-0.170667-0.877714-0.243809-1.340952-0.170667-0.75581-0.292571-1.536-0.487619-2.291809l-0.219429-1.121524a66.243048 66.243048 0 0 0-0.755809-3.340191v-0.048762a69.095619 69.095619 0 0 0-1.121524-4.461714c-0.170667-0.78019-0.414476-1.536-0.585143-2.31619l-0.365714-1.292191c-0.170667-0.682667-0.341333-1.389714-0.585143-2.048l-0.341334-1.340952c-0.195048-0.658286-0.365714-1.365333-0.609523-1.999238a12.434286 12.434286 0 0 0-0.390096-1.365334l-0.609523-1.974857c-0.097524-0.487619-0.292571-0.902095-0.414477-1.365333l-0.633904-2.048a9.630476 9.630476 0 0 0-0.414477-1.219048l-0.755809-2.243047-0.365714-1.072762c-0.341333-1.048381-0.707048-2.121143-1.121524-3.169524v-0.048762c-0.414476-1.072762-0.75581-2.194286-1.170286-3.242667l-0.365714-0.975238a54.442667 54.442667 0 0 1-0.804572-2.243047l-0.487619-1.194667-0.755809-1.974857a30.47619 30.47619 0 0 1-0.536381-1.292191c-0.24381-0.658286-0.536381-1.29219-0.75581-1.950476l-0.536381-1.29219-0.828952-1.950477-0.536381-1.219047-0.877714-1.950476-0.536381-1.170286c-0.292571-0.707048-0.633905-1.414095-0.975238-2.121143l-0.487619-0.975238c-0.487619-0.999619-0.950857-2.072381-1.462857-3.072v-0.048762c-0.487619-1.072762-0.999619-2.048-1.536-3.047619a6.460952 6.460952 0 0 0-0.48762-0.902095c-0.341333-0.707048-0.707048-1.462857-1.097142-2.169905a21.577143 21.577143 0 0 0-0.585143-1.121524c-0.365714-0.633905-0.658286-1.26781-1.024-1.950476-0.24381-0.390095-0.414476-0.731429-0.633905-1.145905-0.365714-0.585143-0.658286-1.219048-0.999619-1.828571l-0.658286-1.170286a28.111238 28.111238 0 0 1-0.975238-1.828571l-0.658286-1.170286c-0.365714-0.633905-0.731429-1.219048-1.072761-1.877333l-0.658286-1.072762-1.219048-2.048-0.536381-0.877715c-1.170286-1.950476-2.413714-3.876571-3.584-5.753904l-0.536381-0.75581c-0.487619-0.731429-0.877714-1.414095-1.365333-2.072381-0.24381-0.341333-0.463238-0.633905-0.633905-0.975238l-1.219047-1.828571-0.731429-1.072762c-0.414476-0.585143-0.828952-1.170286-1.170286-1.755429l-0.78019-1.048381a43.008 43.008 0 0 0-1.219048-1.706666l-0.78019-1.072762-1.292191-1.755429-0.707047-0.975238a42.398476 42.398476 0 0 0-1.462858-1.950476l-0.585142-0.780191a121.295238 121.295238 0 0 0-4.778667-5.973333l-1.584762-1.950476a10.727619 10.727619 0 0 0-0.78019-0.877714l-1.414096-1.706667c-0.292571-0.292571-0.512-0.633905-0.828952-0.950857L751.299048 438.857143l-0.902096-0.975238-1.414095-1.609143a11.361524 11.361524 0 0 1-0.828952-0.926476l-1.462857-1.657905-0.828953-0.877714-1.633524-1.755429c-0.24381-0.24381-0.414476-0.487619-0.658285-0.707048-1.584762-1.633524-3.169524-3.291429-4.778667-4.87619l-0.585143-0.585143c-0.585143-0.585143-1.219048-1.170286-1.828571-1.828571l-0.828953-0.828953a20.382476 20.382476 0 0 0-1.633523-1.511619l-0.877715-0.828952-1.609143-1.462857-0.926476-0.877715a34.864762 34.864762 0 0 1-1.609143-1.462857 10.971429 10.971429 0 0 0-0.926476-0.828952l-1.657905-1.462857-0.877714-0.780191-1.828571-1.584762-0.707048-0.633904-2.584381-2.194286a261.144381 261.144381 0 0 1 44.690286 146.627048c0 145.359238-118.150095 263.192381-263.850667 263.192381-63.780571 0-122.270476-22.552381-167.911619-60.14781 1.462857 2.169905 2.925714 4.266667 4.486095 6.38781l0.170667 0.292571 2.048 2.82819 0.292571 0.341334c2.31619 3.120762 4.656762 6.119619 7.070477 9.118476 0.073143 0.121905 0.195048 0.170667 0.243809 0.292571 0.707048 0.877714 1.462857 1.755429 2.243048 2.633143l0.292571 0.365715c2.462476 2.925714 4.998095 5.802667 7.606857 8.630857 0.097524 0.121905 0.170667 0.24381 0.292572 0.292571l2.291809 2.462476 0.341334 0.365715c2.657524 2.755048 5.315048 5.510095 8.070095 8.167619l0.365714 0.341333 2.413714 2.291809 0.414477 0.341334c2.755048 2.584381 5.607619 5.168762 8.533333 7.655619l0.414476 0.341333 2.462476 2.121143c0.195048 0.121905 0.292571 0.24381 0.487619 0.414476a525.360762 525.360762 0 0 0 9.411048 7.509334c0.828952 0.658286 1.706667 1.29219 2.535619 1.877333l0.536381 0.414476 2.998857 2.194286h0.048762c1.072762 0.731429 2.121143 1.511619 3.242667 2.194286 0.073143 0 0.073143 0.073143 0.121905 0.073142 0.999619 0.658286 1.950476 1.365333 2.925714 1.999238 0.24381 0.121905 0.438857 0.292571 0.658286 0.414477 0.828952 0.585143 1.706667 1.121524 2.608761 1.706666 0.24381 0.121905 0.414476 0.292571 0.633905 0.414477l3.072 1.950476 0.048762 0.048762c1.121524 0.707048 2.243048 1.340952 3.31581 2.048l0.292571 0.170666c0.926476 0.585143 1.950476 1.170286 2.876952 1.706667l0.731429 0.414476 2.56 1.462857 0.731429 0.414476c1.048381 0.585143 2.048 1.170286 3.096381 1.706667 0.073143 0 0.073143 0.048762 0.121904 0.048762 1.121524 0.609524 2.243048 1.243429 3.413334 1.828571l0.414476 0.24381 2.901333 1.462857c0.292571 0.121905 0.512 0.292571 0.804572 0.414476 0.902095 0.414476 1.706667 0.877714 2.608761 1.292191 0.292571 0.121905 0.512 0.292571 0.828953 0.414476 1.048381 0.512 2.121143 0.975238 3.169524 1.511619l0.170666 0.073143c1.194667 0.512 2.29181 1.048381 3.486477 1.584762 0.170667 0.121905 0.414476 0.170667 0.585142 0.243809l2.828191 1.219048 0.926476 0.414476c0.902095 0.341333 1.706667 0.707048 2.608762 1.121524l0.877714 0.341333c1.072762 0.414476 2.121143 0.877714 3.242667 1.292191 0.048762 0.073143 0.170667 0.073143 0.243809 0.121905 1.170286 0.487619 2.340571 0.950857 3.535239 1.340952l0.707047 0.316952c0.926476 0.341333 1.80419 0.682667 2.755048 0.975238l1.072762 0.365715c0.877714 0.292571 1.706667 0.585143 2.584381 0.926476l0.975238 0.365714c1.072762 0.341333 2.194286 0.707048 3.315809 1.121524 0.121905 0 0.170667 0.048762 0.292572 0.121905 1.194667 0.390095 2.438095 0.731429 3.608381 1.097143l0.804571 0.243809 2.779429 0.828952 1.121523 0.341334c0.877714 0.24381 1.755429 0.487619 2.584381 0.755809l1.072762 0.316953 3.340191 0.877714 0.292571 0.048762c1.243429 0.292571 2.486857 0.633905 3.657143 0.950857 0.292571 0.048762 0.658286 0.170667 0.950857 0.24381 0.877714 0.219429 1.828571 0.390095 2.681905 0.633904 0.438857 0.121905 0.853333 0.170667 1.219048 0.292572l2.633142 0.585143c0.341333 0.048762 0.75581 0.170667 1.121524 0.243809l3.413334 0.682667c0.121905 0 0.170667 0.073143 0.292571 0.073143l3.705905 0.707047 1.072762 0.170667c0.877714 0.170667 1.828571 0.292571 2.681904 0.487619l1.316572 0.170667c0.877714 0.097524 1.755429 0.26819 2.657524 0.390095l1.170285 0.195048a72.996571 72.996571 0 0 0 3.779048 0.512c1.219048 0.195048 2.535619 0.292571 3.754667 0.487619l1.121523 0.097523c0.877714 0.121905 1.828571 0.195048 2.706286 0.292572 0.414476 0.073143 0.877714 0.073143 1.292191 0.121905l2.681904 0.243809c0.390095 0.048762 0.804571 0.048762 1.145905 0.121905 1.243429 0.121905 2.486857 0.170667 3.730286 0.243809h0.170667c1.29219 0.048762 2.584381 0.170667 3.827809 0.219429l1.170286 0.048762c0.877714 0.073143 1.828571 0.073143 2.706286 0.121905 0.487619 0 0.902095 0.073143 1.365333 0.073142l2.681905 0.048762h1.267809l3.900953 0.048762a263.265524 263.265524 0 0 0 142.214095-41.447619l5.290666-3.486476c1.77981-1.170286 3.486476-2.413714 5.241905-3.584 0.902095-0.585143 1.706667-1.219048 2.608762-1.828571 1.706667-1.219048 3.413333-2.511238 5.046857-3.754667 1.657905-1.219048 3.364571-2.584381 5.022476-3.925333 1.633524-1.29219 3.291429-2.657524 4.876191-3.998477l2.438095-2.048a247.734857 247.734857 0 0 0 18.310095-17.456761 231.789714 231.789714 0 0 0 14.628572-16.62781c1.26781-1.633524 2.608762-3.291429 3.900952-4.998095 0.658286-0.804571 1.316571-1.706667 1.950476-2.511238 1.901714-2.535619 3.779048-5.12 5.534477-7.704381 1.194667-1.755429 2.438095-3.462095 3.535238-5.217524a166.034286 166.034286 0 0 0 3.413333-5.36381c1.121524-1.80419 2.243048-3.584 3.31581-5.38819a297.593905 297.593905 0 0 0 9.118476-16.749714 174.32381 174.32381 0 0 0 2.779428-5.753905l2.633143-5.827048a256.585143 256.585143 0 0 0 17.895619-58.758095c0.195048-1.024 0.365714-2.145524 0.609524-3.218286a240.688762 240.688762 0 0 0 1.414095-9.801143 262.022095 262.022095 0 0 0 1.950476-23.381333l0.170667-6.753524v-3.413333c0.24381-1.511619 0.24381-2.681905 0.24381-3.925333z" fill="#FEC43C" p-id="6412"></path> <path data-v-46fb5db6="" d="M394.166857 531.163429a47.250286 47.250286 0 0 0 29.305905 43.739428 47.591619 47.591619 0 0 0 62.025143-25.624381 47.225905 47.225905 0 0 0-10.288762-51.614476 47.542857 47.542857 0 0 0-81.042286 33.499429zM615.814095 531.163429a47.201524 47.201524 0 0 0 29.281524 43.739428 47.567238 47.567238 0 0 0 62.025143-25.624381 47.201524 47.201524 0 0 0-25.673143-61.878857 47.567238 47.567238 0 0 0-62.025143 25.624381 47.225905 47.225905 0 0 0-3.608381 18.139429zM433.688381 620.617143z m255.439238 21.040762a81.237333 81.237333 0 0 1-2.121143 11.044571H417.499429a137.679238 137.679238 0 0 0 59.416381 82.651429 133.753905 133.753905 0 0 1-10.99581-7.92381c2.121143-24.210286 22.674286-43.178667 47.469714-43.178666 16.359619 0 30.622476 7.875048 39.033905 19.968 8.94781-12.092952 23.210667-19.992381 39.058286-19.992381a47.542857 47.542857 0 0 1 47.469714 43.203047 137.362286 137.362286 0 0 0 50.663619-85.820952 18.383238 18.383238 0 0 0-18.529524-21.040762c11.142095 0.048762 20.163048 10.044952 18.041905 21.089524z" fill="#873A18" p-id="6413"></path> <path data-v-46fb5db6="" d="M417.401905 652.678095h0.097524a135.192381 135.192381 0 0 1-2.243048-10.971428c0.536381 3.705905 1.072762 7.338667 2.121143 10.971428z" fill="#FFFFFF" p-id="6414"></path> <path data-v-46fb5db6="" d="M415.256381 641.657905v0.121905c0.585143 3.681524 1.365333 7.314286 2.243048 10.971428h269.507047c1.048381-3.705905 1.584762-7.338667 2.121143-11.044571 2.121143-11.044571-6.826667-21.016381-17.968762-21.016381h-237.470476a18.285714 18.285714 0 0 0-18.432 20.967619z" fill="#FFFFFF" p-id="6415"></path> <path data-v-46fb5db6="" d="M549.254095 757.443048l3.169524 0.048762c1.072762 0 2.121143 0 3.169524-0.048762l-3.169524 0.048762c-1.048381-0.048762-2.121143-0.048762-3.169524-0.048762z m9.606095-0.121905c-0.902095 0.048762-1.828571 0.048762-2.730666 0.121905 0.902095-0.073143 1.77981-0.073143 2.730666-0.121905z m-10.093714 0.121905a41.935238 41.935238 0 0 1-2.681905-0.121905c0.853333 0.048762 1.755429 0.048762 2.681905 0.121905z m13.312-0.292572a2377.630476 2377.630476 0 0 1-2.876952 0.170667l2.876952-0.170667z m-19.358476 0z m83.334095-20.504381z" fill="#F44444" p-id="6416"></path> <path data-v-46fb5db6="" d="M591.481905 684.30019c-15.847619 0-30.110476 7.875048-39.058286 19.992381a47.225905 47.225905 0 0 0-39.033905-19.992381 47.542857 47.542857 0 0 0-47.469714 43.178667 145.16419 145.16419 0 0 0 12.824381 9.045333l0.170667 0.121905a139.337143 139.337143 0 0 0 63.804952 20.48h0.097524l2.82819 0.195048h0.414476c0.902095 0.048762 1.77981 0.048762 2.706286 0.121905h0.536381l3.169524 0.048762c1.072762 0 2.145524 0 3.193905-0.048762h0.487619c0.877714 0 1.80419-0.073143 2.681905-0.121905h0.365714l2.876952-0.170667h0.121905a138.654476 138.654476 0 0 0 63.853714-20.504381l1.950476-1.219047c0.585143-0.365714 1.170286-0.78019 1.755429-1.121524l0.048762-0.073143c3.120762-2.121143 6.192762-4.33981 9.191619-6.680381a47.616 47.616 0 0 0-47.542857-43.25181z" fill="#F44444" p-id="6417"></path></g></svg></div> <div data-v-46fb5db6="" class="tips"><span data-v-46fb5db6="">如果启智社区对您的科研工作提供了帮助，请在论文中给我们添加致谢（<a data-v-46fb5db6="" target="_blank" href="https://bbs.openi.org.cn/forums/7877">更多内容</a>）。</span></div></div></div></div></div></div> <div data-v-426e9c7c="" class="form-right"><div data-v-426e9c7c="" class="form-right-content"><div data-v-4fb01697="" data-v-426e9c7c=""><!----> <!----> <div data-v-4fb01697="" class="title" style="font-weight: bold;"><p data-v-4fb01697=""><span data-v-4fb01697="">请使用c2net库方式在容器中访问相关资源，可参考<a target="_blank" href="https://openi.pcl.ac.cn/docs/index.html#/cloudbrain/codepath">使用帮助</a>。</span></p></div> <div data-v-4fb01697="" class="title"><p data-v-4fb01697="" style=""><span data-v-4fb01697="">根据您选择的计算任务类型，指定的数据集、模型等，访问数据集和模型，回传结果的示例代码如下：</span></p></div> <div data-v-4fb01697="" class="content" style=""><div data-v-4fb01697="" class="code-c"><div data-v-4fb01697="" class="code-content markdown"><pre data-v-4fb01697=""><code data-v-4fb01697="" class="python hljs"><span class="hljs-keyword">from</span> c2net.context <span class="hljs-keyword">import</span> prepare,upload_output
+
+<span class="hljs-comment">#初始化导入数据集和预训练模型到容器内</span>
+c2net_context = prepare()
+
+<span class="hljs-comment">#输出结果必须保存在该目录</span>
+you_should_save_here = c2net_context.output_path
+
+<span class="hljs-comment">#回传结果到openi，只有训练任务才能回传</span>
+upload_output()
+</code></pre></div> <div data-v-4fb01697="" class="copy-btn sdk-code-copy"><a data-v-4fb01697="" href="javascript:;" id="clipboard-5961274986984194" data-position="top center" data-variation="inverted tiny" data-success="复制成功" data-content="复制" data-original="复制" data-clipboard-text="from c2net.context import prepare,upload_output
+
+#初始化导入数据集和预训练模型到容器内
+c2net_context = prepare()
+
+#输出结果必须保存在该目录
+you_should_save_here = c2net_context.output_path
+
+#回传结果到openi，只有训练任务才能回传
+upload_output()
+" class="ui poping up clipboard"><i data-v-4fb01697="" class="copy outline icon" style="font-size: 14px;"></i></a></div></div></div></div></div></div></div></div></div></div> <!----> <div data-v-282228d2="" data-v-349e2224="" data-v-426e9c7c="" class="base-dlg"><div data-v-282228d2="" class="el-dialog__wrapper base-dlg" style="display: none;"><div role="dialog" aria-modal="true" aria-label="OpenI在线推理部署须知" class="el-dialog" style="margin-top: 14vh;"><div class="el-dialog__header"><span class="el-dialog__title">OpenI在线推理部署须知</span><!----></div><!----><!----></div></div></div> <!----></div>
+    </div>
+  </main>
+</div>
+
+<script>
+/* ============================================================
+   Custom selects (filter dropdowns)
+   ============================================================ */
+(function(){
+  document.querySelectorAll('.select').forEach(sel=>{
+    const btn=sel.querySelector('.select__btn');
+    const menu=sel.querySelector('.select__menu');
+    const valEl=btn.querySelector('.vl');
+    const search=sel.querySelector('.opt__search input');
+    const opts=sel.querySelectorAll('.opt:not(.opt__search)');
+    btn.addEventListener('click',e=>{
+      e.stopPropagation();
+      document.querySelectorAll('.select.open').forEach(s=>{if(s!==sel)s.classList.remove('open');});
+      sel.classList.toggle('open');
+      if(search){setTimeout(()=>search.focus(),50);search.value='';filterOpts('');}
+    });
+    opts.forEach(o=>{
+      o.addEventListener('click',e=>{
+        e.stopPropagation();
+        opts.forEach(x=>x.classList.remove('sel'));
+        o.classList.add('sel');
+        valEl.textContent=o.textContent.trim();
+        sel.classList.remove('open');
+      });
+    });
+    if(search){
+      function filterOpts(q){
+        q=q.toLowerCase();
+        opts.forEach(o=>{o.style.display=o.textContent.toLowerCase().includes(q)?'':'none';});
+      }
+      search.addEventListener('input',()=>filterOpts(search.value));
+      search.addEventListener('click',e=>e.stopPropagation());
+    }
+  });
+  document.addEventListener('click',()=>document.querySelectorAll('.select.open').forEach(s=>s.classList.remove('open')));
+})();
+
+/* ============================================================
+   Row action "more" menus
+   ============================================================ */
+(function(){
+  document.querySelectorAll('.act-more').forEach(m=>{
+    m.addEventListener('click',e=>{
+      e.stopPropagation();
+      document.querySelectorAll('.act-more.open').forEach(x=>{if(x!==m)x.classList.remove('open');});
+      m.classList.toggle('open');
+    });
+  });
+  document.addEventListener('click',()=>document.querySelectorAll('.act-more.open').forEach(m=>m.classList.remove('open')));
+})();
+
+/* ============================================================
+   Checkbox select-all + bulk actions visibility
+   ============================================================ */
+(function(){
+  const all=document.getElementById('checkAll');
+  const boxes=document.querySelectorAll('tbody .cb');
+  const bulk=document.getElementById('bulkActions');
+  const cnt=document.getElementById('selCount');
+  function update(){
+    const n=[...boxes].filter(b=>b.checked).length;
+    cnt.textContent=n;
+    bulk.style.display=n>0?'flex':'none';
+    all.checked=n===boxes.length&&n>0;
+    all.indeterminate=n>0&&n<boxes.length;
+  }
+  all.addEventListener('change',()=>{boxes.forEach(b=>b.checked=all.checked);update();});
+  boxes.forEach(b=>b.addEventListener('change',update));
+})();
+
+/* ============================================================
+   Chip removal
+   ============================================================ */
+(function(){
+  document.querySelectorAll('.chip .x').forEach(x=>{
+    x.addEventListener('click',()=>x.closest('.chip').remove());
+  });
+  const clear=document.querySelector('.chips__clear');
+  if(clear) clear.addEventListener('click',()=>{document.querySelectorAll('#chips .chip').forEach(c=>c.remove());clear.remove();});
+})();
+</script>
+
+
+</body></html>
