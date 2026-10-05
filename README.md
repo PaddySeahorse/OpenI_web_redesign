@@ -1,6 +1,6 @@
 # OpenI_web_redesign
 
-[![OpenI Redesign Demo](ui/cloudbrains/resources/img/logos/OpenI-logo.svg)](https://openi-web-redesign.demo.paddyseahorse.top)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Click%20Here-00E5C7?style=for-the-badge)](https://openi-web-redesign.demo.paddyseahorse.top)
 
 ## 一、设计定位：Neural Forge（神经熔炉）
 
