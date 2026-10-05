@@ -48,7 +48,7 @@ if pagehead_match:
 new_main_content = f'\n    {pagehead}\n\n    <div class="create-form-wrap">\n      {form_content}\n    </div>\n  '
 new_layout_html = layout_html[:main_start + len('<main class="main">')] + new_main_content + layout_html[main_end:]
 
-with open("ui/cloudbrains/create.html", "w", encoding="utf-8") as f:
+with open("ui/cloudbrains/create/index.html", "w", encoding="utf-8") as f:
     f.write(new_layout_html)
 
 print("Merged successfully.")
